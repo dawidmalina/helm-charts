@@ -1,0 +1,12 @@
+apiVersion: v1
+entries:
+  external-secrets-configuration:
+  - apiVersion: v2
+    created: "2024-08-09T12:46:15.982930649Z"
+    description: A Helm chart for external secrets configuration
+    digest: 5dd75d7a87f86e4126bb3d32e36e8b0a6040a70a4ab110aca834a3b58be8e097
+    name: external-secrets-configuration
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/external-secrets-configuration-0.0.6/external-secrets-configuration-0.0.6.tgz
+    version: 0.0.6
+generated: "2024-08-09T12:46:15.982940527Z"
