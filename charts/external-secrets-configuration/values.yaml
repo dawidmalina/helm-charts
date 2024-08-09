@@ -1,0 +1,28 @@
+clusterSecretStore: default-provider
+refreshInterval: 5m
+
+objects: {}
+# objects:
+#   test-multi:
+#     dataFrom:
+#       - remoteRef: SUPER_SECRET
+#
+#   property:
+#     data:
+#       - secretKey: foo_property
+#         remoteRef: foo
+#         property: foo_property
+#
+#   foo:
+#     data:
+#       - secretKey: xxx
+#         remoteRef: yyy
+#       - secretKey: foo
+#         remoteRef: bar
+#
+#   bb:
+#     type: kubernetes.io/dockerconfigjson
+#     data:
+#       - secretKey: xxx
+#         remoteRef: yyy
+#  # more k8s types: https://external-secrets.io/v0.4.3/guides-common-k8s-secret-types/
