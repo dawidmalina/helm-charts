@@ -6,20 +6,24 @@ objects: {}
 #   test-multi:
 #     dataFrom:
 #       - remoteRef: SUPER_SECRET
-#
+
+#   test-templates:
+#     dataFrom:
+#       - remoteRef: "{{ .Values.clusterSecretStore | upper }}_SUPER_SECRET"
+
 #   property:
 #     data:
 #       - secretKey: foo_property
 #         remoteRef: foo
 #         property: foo_property
-#
+
 #   foo:
 #     data:
 #       - secretKey: xxx
 #         remoteRef: yyy
 #       - secretKey: foo
 #         remoteRef: bar
-#
+
 #   bb:
 #     type: kubernetes.io/dockerconfigjson
 #     data:
