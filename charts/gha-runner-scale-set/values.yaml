@@ -199,12 +199,12 @@ template:
 
 
 # ONLY FOR DEBUG #
-containerMode:
-  type: dind
+# containerMode:
+#   type: dind
 
-controllerServiceAccount:
-  name: change-me
-  namespace: arc-system
+# controllerServiceAccount:
+#   name: change-me
+#   namespace: arc-system
 
 
 ## Optional controller service account that needs to have required Role and RoleBinding
