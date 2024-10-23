@@ -101,6 +101,7 @@ volumeMounts:
 image: {{ $val.image }}
 args:
   - dockerd
+  - --mtu=1450
   - --host=unix:///var/run/docker.sock
   - --group=$(DOCKER_GROUP_GID)
 env:
