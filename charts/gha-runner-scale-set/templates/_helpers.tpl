@@ -102,6 +102,7 @@ image: {{ $val.image }}
 args:
   - dockerd
   - --mtu=1450
+  - --storage-driver overlay2
   - --host=unix:///var/run/docker.sock
   - --group=$(DOCKER_GROUP_GID)
 env:
