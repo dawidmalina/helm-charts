@@ -194,7 +194,7 @@ template:
       - name: runner
         image: ghcr.io/actions/actions-runner:latest
         command: ["/home/runner/run.sh"]
-      - name: docker
+      - name: dind
         image: docker:dind
 
 
