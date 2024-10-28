@@ -4,9 +4,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: .github-cache-server
+  name: github-cache-server
   labels:
-    app: .github-cache-server
+    app: github-cache-server
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -22,7 +22,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: .github-cache-server
+                name: github-cache-server
                 port:
                   number: {{ .Values.service.port }}
     {{- end }}
