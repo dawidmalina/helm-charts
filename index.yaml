@@ -116,6 +116,14 @@ entries:
     version: 0.9.3-1
   github-actions-cache-server:
   - apiVersion: v2
+    created: "2024-10-28T10:54:52.528331074Z"
+    description: Self-Hosted Cache Server for GitHub Actions
+    digest: 5eea4947a65b1b98be73fc25d30e36baa874cdfff9bd5294a16485920270d575
+    name: github-actions-cache-server
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/github-actions-cache-server-0.0.5/github-actions-cache-server-0.0.5.tgz
+    version: 0.0.5
+  - apiVersion: v2
     created: "2024-10-28T10:52:13.681097705Z"
     description: Self-Hosted Cache Server for GitHub Actions
     digest: 36006e4bf50f4a0dfc8911615fc8014aa2228ec40a1f01100c080a0b69e9d2d2
@@ -147,4 +155,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/github-actions-cache-server-0.0.1/github-actions-cache-server-0.0.1.tgz
     version: 0.0.1
-generated: "2024-10-28T10:52:13.681130747Z"
+generated: "2024-10-28T10:54:52.528399882Z"
