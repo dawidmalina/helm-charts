@@ -19,9 +19,8 @@ env: {}
   #   value: http://localhost:3000
 
 podSecurityContext:
-  securityContext:
-    fsGroup: 10000
-    runAsUser: 10000
+  fsGroup: 10000
+  runAsUser: 10000
 
 volumeClaim:
   name: sqlite-claim
