@@ -10,13 +10,18 @@ serviceAccount: {}
 service:
   port: 3000
 
-env:
-  - name: DB_SQLITE_PATH
-    value: /opt/sqlite
-  - name: URL_ACCESS_TOKEN
-    value: random_token
-  - name: API_BASE_URL
-    value: http://localhost:3000
+env: {}
+  # - name: DB_SQLITE_PATH
+  #   value: /opt/sqlite
+  # - name: URL_ACCESS_TOKEN
+  #   value: random_token
+  # - name: API_BASE_URL
+  #   value: http://localhost:3000
+
+podSecurityContext:
+  securityContext:
+    fsGroup: 10000
+    runAsUser: 10000
 
 volumeClaim:
   name: sqlite-claim
