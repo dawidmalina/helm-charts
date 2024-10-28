@@ -7,6 +7,9 @@ image:
 
 serviceAccount: {}
 
+ingress:
+  enabled: false
+
 service:
   type: ClusterIP
   port: 3000
