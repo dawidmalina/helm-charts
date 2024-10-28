@@ -12,7 +12,7 @@ service:
 
 env: {}
   # - name: DB_SQLITE_PATH
-  #   value: /opt/sqlite
+  #   value: /opt/data/sqlite.db
   # - name: URL_ACCESS_TOKEN
   #   value: random_token
   # - name: API_BASE_URL
@@ -31,5 +31,5 @@ volumes:
       claimName: sqlite-claim
 
 volumeMounts:
-  - mountPath: /opt/sqlite
+  - mountPath: /opt/data
     name: sqlite
