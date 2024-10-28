@@ -1,8 +1,8 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/falcondev-oss
-  name: github-actions-cache-server
+  repository: ghcr.io
+  name: falcondev-oss/github-actions-cache-server
   tag: 3.1
 
 serviceAccount: {}
