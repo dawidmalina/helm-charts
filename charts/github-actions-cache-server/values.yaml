@@ -9,6 +9,7 @@ serviceAccount: {}
 
 ingress:
   enabled: false
+  host: example.com
   paths:
     - path: /
       pathType: Prefix
