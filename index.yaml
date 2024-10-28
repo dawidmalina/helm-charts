@@ -114,4 +114,13 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/gha-runner-scale-set-0.9.3-1/gha-runner-scale-set-0.9.3-1.tgz
     version: 0.9.3-1
-generated: "2024-10-23T19:54:09.997247969Z"
+  github-actions-cache-server:
+  - apiVersion: v2
+    created: "2024-10-28T10:24:36.967599891Z"
+    description: Self-Hosted Cache Server for GitHub Actions
+    digest: 0d8868ac084225e07fcccfda2d73f767bf27182eff532bd613dcfb28b25a863c
+    name: github-actions-cache-server
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/github-actions-cache-server-0.0.1/github-actions-cache-server-0.0.1.tgz
+    version: 0.0.1
+generated: "2024-10-28T10:24:36.96762611Z"
