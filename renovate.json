@@ -7,7 +7,7 @@
   "regexManagers": [
     {
       "fileMatch": [
-        "charts/**/.+\\.yaml$"
+        "charts/.*/values.yaml$"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)(?: lookupName=(?<lookupName>[^\\s]+?))?(?: versioning=(?<versioning>.+?))?(?: extractVersion=(?<extractVersion>.*?))?\\s+[A-Za-z0-9_]+?\\s*?:\\s?(?<currentValue>.+?)\\s",
