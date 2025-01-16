@@ -32,7 +32,7 @@ spec:
       initContainers:
       - name: {{ .Chart.Name }}-init-chmod
         image: busybox
-        command: ['sh', '-c', 'id && mkdir -p /var/lib/ldap && ls -lta /var/lib/ldap /etc/ldap/slapd.d && chown -R 911 /var/lib/ldap /etc/ldap/slapd.d']
+        command: ['sh', '-c', 'id && ls -lta /var/lib && mkdir -p /var/lib/ldap && ls -lta /var/lib/ldap /etc/ldap/slapd.d && chown -R 911 /var/lib/ldap /etc/ldap/slapd.d']
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         volumeMounts:
         - name: data
