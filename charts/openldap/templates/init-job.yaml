@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-ldap
+  labels:
+    app: {{ template "openldap.name" . }}
+    chart: {{ template "openldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.extraLabels }}
+{{ toYaml .Values.extraLabels | indent 4 }}
+{{- end }}
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: lookup-{{ template "openldap.fullname" . }}
+        image: "{{ .Values.initJob.initImage.lookup.repository }}:{{ .Values.initJob.initImage.lookup.tag }}"
+        command: ['sh', '-c', 'until nslookup {{ template "openldap.fullname" . }}.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for ldap; sleep 2; done']
+      - name: wait-ready-{{ template "openldap.fullname" . }}
+        image: "{{ .Values.initJob.image.repository }}:{{ .Values.initJob.image.tag }}"
+        command: ['sh', '/init/check_ready.sh']
+        volumeMounts:
+          - name: init-script
+            mountPath: /init
+            readOnly: true
+        envFrom:
+          - configMapRef:
+              name: {{ template "openldap.fullname" . }}-env
+          - secretRef:
+              name: {{ template "openldap.secretName" . }}
+      containers:
+      - name: ldapadd
+        image:  "{{ .Values.initJob.image.repository }}:{{ .Values.initJob.image.tag }}"
+        imagePullPolicy: "{{ .Values.initJob.image.pullPolicy }}"
+        command: ["/init/script/init.sh"]
+        args: ["/init/files"]
+        envFrom:
+          - configMapRef:
+              name: {{ template "openldap.fullname" . }}-env
+          - secretRef:
+              name: {{ template "openldap.secretName" . }}
+        volumeMounts:
+          - name: init
+            mountPath: /init
+          - name: init-files
+            mountPath: /init/files
+            readOnly: true
+          - name: init-script
+            mountPath: /init/script
+            readOnly: true
+      volumes:
+        - name: init-script
+          configMap:
+            name: {{ template "openldap.fullname" . }}-init-script
+            defaultMode: 0777
+        - name: init-files
+          secret:
+            secretName: {{ template "openldap.fullname" . }}-init
+        - name: init
+          emptyDir: {}
+      restartPolicy: OnFailure
+  backoffLimit: 4

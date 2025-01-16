@@ -1,0 +1,32 @@
+#
+# A ConfigMap spec for openldap slapd that map directly to env variables in the Pod.
+# List of environment variables supported is from the docker image:
+# https://github.com/osixia/docker-openldap#beginner-guide
+# Note that passwords are defined as secrets
+#
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "openldap.fullname" . }}-init-script
+  labels:
+    app: {{ template "openldap.name" . }}
+    chart: {{ template "openldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.extraLabels }}
+{{ toYaml .Values.extraLabels | indent 4 }}
+{{- end }}
+data:
+  check_ready.sh: |
+    #!/bin/bash
+    USER="cn=admin,dc=$(echo $LDAP_DOMAIN | sed s/\\./,dc=/g)"
+    until ldapwhoami -x -h $LDAP_HOST -D $USER -w $LDAP_ADMIN_PASSWORD; do echo waiting for ldap to be ready; sleep 2; done
+  init.sh: |
+    #!/bin/bash
+    USER="cn=admin,dc=$(echo $LDAP_DOMAIN | sed s/\\./,dc=/g)"
+    for file in $1
+    do
+      ldapadd -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER || exit $?
+    done
+...
