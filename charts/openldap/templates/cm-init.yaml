@@ -25,8 +25,8 @@ data:
   init.sh: |
     #!/bin/bash -x
     USER="cn=admin,dc=$(echo $LDAP_DOMAIN | sed s/\\./,dc=/g)"
-    for file in $1
-    do
+    for file in $1; do
+      find $file
       ldapadd -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER || exit $?
     done
 ...
