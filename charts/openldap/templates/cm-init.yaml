@@ -23,7 +23,7 @@ data:
     USER="cn=admin,dc=$(echo $LDAP_DOMAIN | sed s/\\./,dc=/g)"
     until ldapwhoami -x -h $LDAP_HOST -D $USER -w $LDAP_ADMIN_PASSWORD; do echo waiting for ldap to be ready; sleep 2; done
   init.sh: |
-    #!/bin/bash
+    #!/bin/bash -x
     USER="cn=admin,dc=$(echo $LDAP_DOMAIN | sed s/\\./,dc=/g)"
     for file in $1
     do
