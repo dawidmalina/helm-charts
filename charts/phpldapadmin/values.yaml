@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: osixia/phpldapadmin
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "0.9.0"
+
+env:
+  - name: PHPLDAPADMIN_LDAP_HOSTS
+    value: openldap.openldap
+  - name: PHPLDAPADMIN_HTTPS
+    value: "false"
+
+ingress:
+  host: chart-example.local
+  className: nginx
+  annotations: {}

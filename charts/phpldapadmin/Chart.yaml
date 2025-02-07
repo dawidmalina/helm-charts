@@ -1,0 +1,4 @@
+apiVersion: v2
+name: phpldapadmin
+description: A Helm chart for phpldapadmin configuration
+version: 0.0.1

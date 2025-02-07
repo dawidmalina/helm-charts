@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "phpldapadmin.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "phpldapadmin.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "phpldapadmin.name" . }}
+    spec:
+      containers:
+        - name: {{ template "phpldapadmin.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 80
+              protocol: TCP
