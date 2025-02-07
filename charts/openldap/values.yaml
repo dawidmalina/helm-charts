@@ -84,7 +84,8 @@ initialData: []
 env:
   LDAP_ORGANISATION: "Example Inc."
   LDAP_DOMAIN: "example.org"
-  LDAP_BACKEND: "hdb"
+  # https://github.com/osixia/docker-openldap/issues/451
+  LDAP_BACKEND: "mdb"
   LDAP_TLS: "true"
   LDAP_TLS_ENFORCE: "false"
   LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
