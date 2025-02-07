@@ -474,6 +474,14 @@ entries:
     version: 0.1.1-1
   phpldapadmin:
   - apiVersion: v2
+    created: "2025-02-07T12:37:29.314721704Z"
+    description: A Helm chart for phpldapadmin configuration
+    digest: ce65b07cff0c8fa955ea8553226d263fe2f1f7e86c6fef1dfbca708d6ed7233f
+    name: phpldapadmin
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.2/phpldapadmin-0.0.2.tgz
+    version: 0.0.2
+  - apiVersion: v2
     created: "2025-02-07T11:59:05.796911771Z"
     description: A Helm chart for phpldapadmin configuration
     digest: 6e0c8c080ee23524090b6d385eec17fdb6e7298f0085e051501c3ddaff179667
@@ -481,4 +489,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.1/phpldapadmin-0.0.1.tgz
     version: 0.0.1
-generated: "2025-02-07T11:59:05.796997352Z"
+generated: "2025-02-07T12:37:29.314811211Z"
