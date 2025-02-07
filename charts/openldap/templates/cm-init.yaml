@@ -29,6 +29,7 @@ data:
     for file in $1/*; do
       echo "processing file: $file"
       # cat $file
-      ldapadd -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER || exit $?
+      # -c => Continue after error
+      ldapadd -c -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER
     done
 ...
