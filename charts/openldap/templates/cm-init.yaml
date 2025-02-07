@@ -28,8 +28,6 @@ data:
     echo "init directory: $1"
     for file in $1/*; do
       echo "processing file: $file"
-      # cat $file
-      # -c => Continue after error
-      ldapadd -c -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER
+      ldapadd -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER || if [ $? -ne 68 ]; then exit $? fi
     done
 ...
