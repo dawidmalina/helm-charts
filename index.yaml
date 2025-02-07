@@ -472,4 +472,13 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/openldap-0.1.1-1/openldap-0.1.1-1.tgz
     version: 0.1.1-1
-generated: "2025-02-04T06:41:46.759274753Z"
+  phpldapadmin:
+  - apiVersion: v2
+    created: "2025-02-07T11:59:05.796911771Z"
+    description: A Helm chart for phpldapadmin configuration
+    digest: 6e0c8c080ee23524090b6d385eec17fdb6e7298f0085e051501c3ddaff179667
+    name: phpldapadmin
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.1/phpldapadmin-0.0.1.tgz
+    version: 0.0.1
+generated: "2025-02-07T11:59:05.796997352Z"
