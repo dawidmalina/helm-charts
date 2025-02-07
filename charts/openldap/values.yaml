@@ -69,8 +69,6 @@ initialData: []
 #   title: the world's most famous mythical manager
 #   mail: bjensen@example.com
 #   uid: bjensen
-
-initialData: []
 #- |
 #  dn: cn=Barbara Jensen,dc=example,dc=com
 #  objectClass: person

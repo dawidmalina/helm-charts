@@ -10,6 +10,8 @@ metadata:
 {{- if .Values.extraLabels }}
 {{ toYaml .Values.extraLabels | indent 4 }}
 {{- end }}
+  annotations:
+    "checksum/config": "{{ toJson .Values.initialData | sha256sum }}"
 spec:
   template:
     spec:
