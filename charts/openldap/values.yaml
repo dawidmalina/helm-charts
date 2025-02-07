@@ -97,4 +97,4 @@ persistence:
 
 logLevel: info
 
-existingSecretInit: false
+existingInitSecret: false
