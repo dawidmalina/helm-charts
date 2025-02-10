@@ -27,7 +27,7 @@ data:
     USER="cn=admin,dc=$(echo $LDAP_DOMAIN | sed s/\\./,dc=/g)"
     echo ":: init directory: $1"
     for file in $1/*; do
-      echo "\n:: processing file: ${file}"
+      echo -e "\n:: processing file: ${file}"
       # ignore ldap_add: Already exists (68)
       # ignore ldap_modify: Type or value exists (20)
       ldapadd -c -f $file -h $LDAP_HOST -w $LDAP_ADMIN_PASSWORD -D $USER || if [ $? -ne 68 ] && [ $? -ne 20 ] && [ $? -ne 0 ]; then echo ":: processing file ${file} ended with exit $?"; fi
