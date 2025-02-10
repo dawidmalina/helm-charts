@@ -254,6 +254,26 @@ entries:
   openldap:
   - apiVersion: v2
     appVersion: 2.4.57
+    created: "2025-02-10T10:15:52.057820347Z"
+    description: Open implementation of the ldap standard based on osixia/docker-openldap
+    digest: 722b10cca7622773de38170c54ba7993a9f7c3b914e2b2580d9efc474c4c9b24
+    home: https://www.openldap.org
+    icon: http://www.openldap.org/images/headers/LDAPworm.gif
+    keywords:
+    - ldap
+    - openldap
+    maintainers:
+    - name: Lukas Paluch
+      url: https://github.com/fluktuid/
+    name: openldap
+    sources:
+    - https://github.com/fluktuid/helm-charts
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/openldap-0.1.1-24/openldap-0.1.1-24.tgz
+    version: 0.1.1-24
+  - apiVersion: v2
+    appVersion: 2.4.57
     created: "2025-02-10T10:11:26.266372056Z"
     description: Open implementation of the ldap standard based on osixia/docker-openldap
     digest: 626d6be20978457473e32c76b4a0a0946d3f6870d22c400e27a159c751f5933a
@@ -717,4 +737,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.1/phpldapadmin-0.0.1.tgz
     version: 0.0.1
-generated: "2025-02-10T10:11:26.26656618Z"
+generated: "2025-02-10T10:15:52.058027826Z"
