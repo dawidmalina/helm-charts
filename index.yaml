@@ -140,6 +140,14 @@ entries:
     - https://github.com/dawidmalina/helm-charts/releases/download/github-actions-cache-server-0.0.12/github-actions-cache-server-0.0.12.tgz
     version: 0.0.12
   - apiVersion: v2
+    created: "2025-03-03T11:29:54.351475988Z"
+    description: Self-Hosted Cache Server for GitHub Actions
+    digest: 20144657309f614440674df6f30f838bab7d14fdd8dd17adb9e574ca1e375e56
+    name: github-actions-cache-server
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/github-actions-cache-server-0.0.12-4/github-actions-cache-server-0.0.12-4.tgz
+    version: 0.0.12-4
+  - apiVersion: v2
     created: "2025-02-04T06:41:46.759119713Z"
     description: Self-Hosted Cache Server for GitHub Actions
     digest: 5fec7ca06e9308b2d9da12e7052f80025528cfe1972526ce92561dea89641830
@@ -797,4 +805,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.1/phpldapadmin-0.0.1.tgz
     version: 0.0.1
-generated: "2025-02-10T10:26:07.731578836Z"
+generated: "2025-03-03T11:29:54.351746502Z"
