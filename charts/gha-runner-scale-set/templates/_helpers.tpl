@@ -43,7 +43,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: gha-rs
 actions.github.com/scale-set-name: {{ include "gha-runner-scale-set.scale-set-name" . }}
-actions.github.com/scale-set-namespace: {{ .Release.Namespace }}
+actions.github.com/scale-set-namespace: {{ include "gha-runner-scale-set.namespace" . }}
 {{- end }}
 
 {{/*
@@ -87,7 +87,7 @@ app.kubernetes.io/instance: {{ include "gha-runner-scale-set.scale-set-name" . }
   {{- if eq $val.name "runner" }}
 image: {{ $val.image }}
 command: ["cp"]
-args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+args: ["-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
 volumeMounts:
   - name: dind-externals
     mountPath: /home/runner/tmpDir
@@ -102,7 +102,6 @@ image: {{ $val.image }}
 args:
   - dockerd
   - --mtu=1450
-  - --storage-driver=overlay2
   - --host=unix:///var/run/docker.sock
   - --group=$(DOCKER_GROUP_GID)
 env:
@@ -142,7 +141,7 @@ volumeMounts:
   {{- range $i, $volume := .Values.template.spec.volumes }}
     {{- if eq $volume.name "work" }}
       {{- $createWorkVolume = 0 }}
-- {{ $volume | toYaml | nindent 2 }}
+- {{ $volume | toYaml | nindent 2 | trim }}
     {{- end }}
   {{- end }}
   {{- if eq $createWorkVolume 1 }}
@@ -156,7 +155,7 @@ volumeMounts:
   {{- range $i, $volume := .Values.template.spec.volumes }}
     {{- if eq $volume.name "work" }}
       {{- $createWorkVolume = 0 }}
-- {{ $volume | toYaml | nindent 2 }}
+- {{ $volume | toYaml | nindent 2 | trim  }}
     {{- end }}
   {{- end }}
   {{- if eq $createWorkVolume 1 }}
@@ -171,7 +170,7 @@ volumeMounts:
 {{- define "gha-runner-scale-set.non-work-volumes" -}}
   {{- range $i, $volume := .Values.template.spec.volumes }}
     {{- if ne $volume.name "work" }}
-- {{ $volume | toYaml | nindent 2 }}
+- {{ $volume | toYaml | nindent 2 | trim }}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -224,7 +223,7 @@ env:
         {{- if eq $env.name "RUNNER_UPDATE_CA_CERTS" }}
           {{- $setRunnerUpdateCaCerts = 0 }}
         {{- end }}
-  - {{ $env | toYaml | nindent 4 }}
+  - {{ $env | toYaml | nindent 4 | trim }}
       {{- end }}
     {{- end }}
     {{- if $setDockerHost }}
@@ -261,7 +260,7 @@ volumeMounts:
         {{- if eq $volMount.name "github-server-tls-cert" }}
           {{- $mountGitHubServerTLS = 0 }}
         {{- end }}
-  - {{ $volMount | toYaml | nindent 4 }}
+  - {{ $volMount | toYaml | nindent 4 | trim }}
       {{- end }}
     {{- end }}
     {{- if $mountWork }}
@@ -487,8 +486,8 @@ volumeMounts:
       {{- $managerServiceAccountName = (get $controllerDeployment.metadata.labels "actions.github.com/controller-service-account-name") }}
     {{- end }}
   {{- else if gt $singleNamespaceCounter 0 }}
-    {{- if hasKey $singleNamespaceControllerDeployments .Release.Namespace }}
-      {{- $controllerDeployment = get $singleNamespaceControllerDeployments .Release.Namespace }}
+    {{- if hasKey $singleNamespaceControllerDeployments (include "gha-runner-scale-set.namespace" .) }}
+      {{- $controllerDeployment = get $singleNamespaceControllerDeployments (include "gha-runner-scale-set.namespace" .) }}
       {{- with $controllerDeployment.metadata }}
         {{- $managerServiceAccountName = (get $controllerDeployment.metadata.labels "actions.github.com/controller-service-account-name") }}
       {{- end }}
@@ -544,8 +543,8 @@ volumeMounts:
       {{- $managerServiceAccountNamespace = (get $controllerDeployment.metadata.labels "actions.github.com/controller-service-account-namespace") }}
     {{- end }}
   {{- else if gt $singleNamespaceCounter 0 }}
-    {{- if hasKey $singleNamespaceControllerDeployments .Release.Namespace }}
-      {{- $controllerDeployment = get $singleNamespaceControllerDeployments .Release.Namespace }}
+    {{- if hasKey $singleNamespaceControllerDeployments (include "gha-runner-scale-set.namespace" .) }}
+      {{- $controllerDeployment = get $singleNamespaceControllerDeployments (include "gha-runner-scale-set.namespace" .) }}
       {{- with $controllerDeployment.metadata }}
         {{- $managerServiceAccountNamespace = (get $controllerDeployment.metadata.labels "actions.github.com/controller-service-account-namespace") }}
       {{- end }}
@@ -557,5 +556,13 @@ volumeMounts:
     {{- fail "No service account namespace found for gha-rs-controller deployment using label (actions.github.com/controller-service-account-namespace), consider setting controllerServiceAccount.namespace in values.yaml to be explicit if you think the discovery is wrong." }}
   {{- end }}
 {{- $managerServiceAccountNamespace }}
+{{- end }}
+{{- end }}
+
+{{- define "gha-runner-scale-set.namespace" -}}
+{{- if .Values.namespaceOverride }}
+  {{- .Values.namespaceOverride }}
+{{- else }}
+  {{- .Release.Namespace }}
 {{- end }}
 {{- end }}
