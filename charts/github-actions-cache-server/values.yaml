@@ -14,8 +14,7 @@ ingress:
   paths:
     - path: /
       pathType: Prefix
-  tls:
-    enabled: false
+  tls: {}
     # Example configuration for TLS (disabled by default)
     # tls:
     #   - hosts:

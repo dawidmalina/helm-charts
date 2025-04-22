@@ -26,14 +26,8 @@ spec:
                 port:
                   number: {{ $.Values.service.port }}
     {{- end }}
-  {{- if .Values.ingress.tls.enabled }}
+  {{- with .Values.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName | quote }}
-    {{- end }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}
