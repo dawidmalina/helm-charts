@@ -14,6 +14,14 @@ ingress:
   paths:
     - path: /
       pathType: Prefix
+  tls:
+    enabled: false
+    # Example configuration for TLS (disabled by default)
+    # tls:
+    #   - hosts:
+    #       - example.com
+    #       - www.example.com
+    #     secretName: my-tls-secret
 
 service:
   type: ClusterIP
