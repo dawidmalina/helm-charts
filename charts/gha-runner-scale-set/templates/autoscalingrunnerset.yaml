@@ -1,4 +1,8 @@
 {{- $hasCustomResourceMeta := (and .Values.resourceMeta .Values.resourceMeta.autoscalingRunnerSet) }}
+{{- $minor := 30 }}
+{{- if and .Capabilities.KubeVersion (hasKey .Capabilities.KubeVersion "Minor") }}
+  {{- $minor = .Capabilities.KubeVersion.Minor }}
+{{- end }}
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
@@ -168,7 +172,7 @@ spec:
       - name: init-dind-externals
         {{- include "gha-runner-scale-set.dind-init-container" . | nindent 8 }}
         {{- end }}
-        {{- if (ge ($.Capabilities.KubeVersion.Minor | int) 29) }}
+        {{- if (ge ($minor | int) 29) }}
       - name: dind
         {{- include "gha-runner-scale-set.dind-container" . | nindent 8 }}
         {{- end }}
@@ -180,7 +184,7 @@ spec:
       {{- if eq $containerMode.type "dind" }}
       - name: runner
         {{- include "gha-runner-scale-set.dind-runner-container" . | nindent 8 }}
-        {{- if not (ge ($.Capabilities.KubeVersion.Minor | int) 29) }}
+        {{- if not (ge ($minor | int) 29) }}
       - name: dind
         {{- include "gha-runner-scale-set.dind-container" . | nindent 8 }}
         {{- end }}
