@@ -1,8 +1,5 @@
 {{- $hasCustomResourceMeta := (and .Values.resourceMeta .Values.resourceMeta.autoscalingRunnerSet) }}
 {{- $minor := 30 }}
-{{- if and .Capabilities.KubeVersion (hasKey .Capabilities.KubeVersion "Minor") }}
-  {{- $minor = .Capabilities.KubeVersion.Minor }}
-{{- end }}
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
