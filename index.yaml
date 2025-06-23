@@ -20,6 +20,22 @@ entries:
   gha-runner-scale-set:
   - apiVersion: v2
     appVersion: 0.12.0
+    created: "2025-06-23T09:14:41.682622377Z"
+    description: A Helm chart for deploying an AutoScalingRunnerSet
+    digest: 1031110a5ec502174a7bf08c7a8c35edaaf1a379205e0a1c52d0b501bf069870
+    home: https://github.com/actions/actions-runner-controller
+    maintainers:
+    - name: actions
+      url: https://github.com/actions
+    name: gha-runner-scale-set
+    sources:
+    - https://github.com/actions/actions-runner-controller
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/gha-runner-scale-set-0.12.1/gha-runner-scale-set-0.12.1.tgz
+    version: 0.12.1
+  - apiVersion: v2
+    appVersion: 0.12.0
     created: "2025-06-15T19:37:02.25535696Z"
     description: A Helm chart for deploying an AutoScalingRunnerSet
     digest: e4e6b685e7c047c2268518d3bea5417b742d09818c48baae47cf5fff97a5ab9e
@@ -893,4 +909,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.1/phpldapadmin-0.0.1.tgz
     version: 0.0.1
-generated: "2025-06-15T19:37:02.255527297Z"
+generated: "2025-06-23T09:14:41.682818526Z"
