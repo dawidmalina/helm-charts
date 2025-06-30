@@ -1,4 +1,4 @@
 apiVersion: v2
 name: github-actions-cache-server
 description: Self-Hosted Cache Server for GitHub Actions
-version: 0.0.16
+version: 0.0.17
