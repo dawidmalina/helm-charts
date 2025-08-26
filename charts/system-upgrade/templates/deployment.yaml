@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "system-upgrade.fullname" . }}-controller
+  namespace: {{ include "system-upgrade.namespace" . }}
+  labels:
+    {{- include "system-upgrade.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+  {{- with .Values.controller.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.controller.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "system-upgrade.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: controller
+  template:
+    metadata:
+      {{- with .Values.controller.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "system-upgrade.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: controller
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "system-upgrade.serviceAccountName" . }}
+      securityContext:
+        {{- include "system-upgrade.podSecurityContext" . | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- include "system-upgrade.securityContext" . | nindent 10 }}
+        image: {{ include "system-upgrade.controllerImage" . }}
+        imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        env:
+        - name: SYSTEM_UPGRADE_CONTROLLER_DEBUG
+          value: {{ .Values.controller.debug | quote }}
+        - name: SYSTEM_UPGRADE_CONTROLLER_THREADS
+          value: {{ .Values.controller.threads | quote }}
+        - name: SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS
+          value: {{ .Values.controller.jobActiveDeadlineSeconds | quote }}
+        - name: SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT
+          value: {{ .Values.controller.jobBackoffLimit | quote }}
+        - name: SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY
+          value: {{ .Values.controller.jobImagePullPolicy | quote }}
+        - name: SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE
+          value: {{ include "system-upgrade.kubectlImage" . }}
+        - name: SYSTEM_UPGRADE_JOB_PRIVILEGED
+          value: {{ .Values.controller.jobPrivileged | quote }}
+        - name: SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISHED
+          value: {{ .Values.controller.jobTtlSecondsAfterFinished | quote }}
+        - name: SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL
+          value: {{ .Values.controller.planPollingInterval | quote }}
+        {{- with .Values.controller.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.controller.livenessProbe.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: {{ .Values.controller.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.controller.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.controller.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.controller.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.controller.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.controller.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+          initialDelaySeconds: {{ .Values.controller.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.controller.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.controller.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.controller.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.controller.readinessProbe.failureThreshold }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.controller.resources | nindent 10 }}
+        {{- with .Values.controller.volumeMounts }}
+        volumeMounts:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- with .Values.controller.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}

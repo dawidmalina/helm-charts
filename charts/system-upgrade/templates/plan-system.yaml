@@ -1,0 +1,63 @@
+{{- if .Values.plans.system.enabled }}
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: {{ include "system-upgrade.fullname" . }}-system
+  namespace: {{ include "system-upgrade.namespace" . }}
+  labels:
+    {{- include "system-upgrade.labels" . | nindent 4 }}
+    app.kubernetes.io/component: plan
+    system-upgrade.cattle.io/plan-type: system
+  {{- with .Values.plans.system.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  concurrency: {{ .Values.plans.system.concurrency }}
+  {{- if .Values.plans.system.cordon }}
+  cordon: {{ .Values.plans.system.cordon }}
+  {{- end }}
+  {{- if .Values.plans.system.drain }}
+  drain:
+    {{- with .Values.plans.system.drain }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  nodeSelector:
+    matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: In
+      values:
+      - "true"
+    {{- with .Values.plans.system.nodeSelector.matchExpressions }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if .Values.plans.system.nodeSelector.matchLabels }}
+    matchLabels:
+      {{- toYaml .Values.plans.system.nodeSelector.matchLabels | nindent 6 }}
+    {{- end }}
+  serviceAccountName: {{ .Values.plans.system.serviceAccountName | default (include "system-upgrade.serviceAccountName" .) }}
+  {{- with .Values.plans.system.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  upgrade:
+    image: {{ .Values.plans.system.upgrade.image }}
+    {{- with .Values.plans.system.upgrade.command }}
+    command:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.plans.system.upgrade.args }}
+    args:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.plans.system.upgrade.env }}
+    env:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.plans.system.upgrade.envFrom }}
+    envFrom:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  version: {{ .Values.plans.system.version | quote }}
+{{- end }}
