@@ -933,4 +933,31 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/phpldapadmin-0.0.1/phpldapadmin-0.0.1.tgz
     version: 0.0.1
-generated: "2025-08-19T21:30:31.240555261Z"
+  system-upgrade:
+  - apiVersion: v2
+    appVersion: v0.13.4
+    created: "2025-08-26T10:10:57.922769698Z"
+    description: A Helm chart for the system-upgrade-controller to manage K3s/RKE2
+      cluster upgrades
+    digest: dd57a325ba03430c8c9940f604a513b9d90eaed6733f21854f2b7ef794e56a2c
+    home: https://github.com/rancher/system-upgrade-controller
+    icon: https://rancher.com/assets/images/brand-logos/rancher-suse-logo-horizontal-white.svg
+    keywords:
+    - rancher
+    - k3s
+    - rke2
+    - upgrade
+    - controller
+    - system-upgrade
+    maintainers:
+    - name: Dawid Malina
+      url: https://github.com/dawidmalina/
+    name: system-upgrade
+    sources:
+    - https://github.com/rancher/system-upgrade-controller
+    - https://github.com/dawidmalina/helm-charts
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-08-26T10:10:57.922981473Z"
