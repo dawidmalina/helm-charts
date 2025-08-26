@@ -1,0 +1,66 @@
+{{- if .Values.plans.agent.enabled }}
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: {{ include "system-upgrade.fullname" . }}-agent
+  namespace: {{ include "system-upgrade.namespace" . }}
+  labels:
+    {{- include "system-upgrade.labels" . | nindent 4 }}
+    app.kubernetes.io/component: plan
+    system-upgrade.cattle.io/plan-type: agent
+  {{- with .Values.plans.agent.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  concurrency: {{ .Values.plans.agent.concurrency }}
+  {{- if .Values.plans.agent.cordon }}
+  cordon: {{ .Values.plans.agent.cordon }}
+  {{- end }}
+  {{- if .Values.plans.agent.drain }}
+  drain:
+    {{- with .Values.plans.agent.drain }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  nodeSelector:
+    matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: DoesNotExist
+    {{- with .Values.plans.agent.nodeSelector.matchExpressions }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if .Values.plans.agent.nodeSelector.matchLabels }}
+    matchLabels:
+      {{- toYaml .Values.plans.agent.nodeSelector.matchLabels | nindent 6 }}
+    {{- end }}
+  prepare:
+    image: {{ .Values.plans.agent.prepare.image }}
+    args:
+    - prepare
+    - {{ include "system-upgrade.fullname" . }}-system
+  serviceAccountName: {{ .Values.plans.agent.serviceAccountName | default (include "system-upgrade.serviceAccountName" .) }}
+  {{- with .Values.plans.agent.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  upgrade:
+    image: {{ .Values.plans.agent.upgrade.image }}
+    {{- with .Values.plans.agent.upgrade.command }}
+    command:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.plans.agent.upgrade.args }}
+    args:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.plans.agent.upgrade.env }}
+    env:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.plans.agent.upgrade.envFrom }}
+    envFrom:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  version: {{ .Values.plans.agent.version | quote }}
+{{- end }}

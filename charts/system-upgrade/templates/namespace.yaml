@@ -1,0 +1,12 @@
+{{- if .Values.createNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "system-upgrade.namespace" . }}
+  labels:
+    {{- include "system-upgrade.labels" . | nindent 4 }}
+  {{- with .Values.namespaceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

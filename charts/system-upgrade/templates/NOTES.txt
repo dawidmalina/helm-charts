@@ -1,0 +1,44 @@
+1. Thank you for installing {{ .Chart.Name }}!
+
+2. The system-upgrade-controller has been deployed to namespace {{ include "system-upgrade.namespace" . }}.
+
+3. To check the status of the controller deployment:
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} get deployments {{ include "system-upgrade.fullname" . }}-controller
+
+4. To view the controller logs:
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} logs -l app.kubernetes.io/name={{ include "system-upgrade.name" . }},app.kubernetes.io/component=controller
+
+{{- if .Values.plans.system.enabled }}
+5. System plan (control-plane nodes) has been created:
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} get plan {{ include "system-upgrade.fullname" . }}-system
+   
+   Target version: {{ .Values.plans.system.version }}
+   Concurrency: {{ .Values.plans.system.concurrency }}
+{{- end }}
+
+{{- if .Values.plans.agent.enabled }}
+6. Agent plan (worker nodes) has been created:
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} get plan {{ include "system-upgrade.fullname" . }}-agent
+   
+   Target version: {{ .Values.plans.agent.version }}
+   Concurrency: {{ .Values.plans.agent.concurrency }}
+{{- end }}
+
+7. To monitor upgrade progress:
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} get plans
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} get jobs
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} get pods
+
+8. To view upgrade job logs:
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} logs -l upgrade.cattle.io/plan={{ include "system-upgrade.fullname" . }}-system
+   kubectl --namespace {{ include "system-upgrade.namespace" . }} logs -l upgrade.cattle.io/plan={{ include "system-upgrade.fullname" . }}-agent
+
+⚠️  IMPORTANT: 
+- The upgrade process will cordon, drain, and reboot nodes
+- Ensure you have backups before proceeding with upgrades
+- Monitor the upgrade process to ensure cluster stability
+- The default configuration upgrades to {{ .Values.plans.system.version }}
+
+📚 For more information:
+- System Upgrade Controller: https://github.com/rancher/system-upgrade-controller
+- K3s Upgrades: https://docs.k3s.io/upgrades/automated

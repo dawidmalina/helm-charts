@@ -1,0 +1,290 @@
+# Default values for system-upgrade.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Override the name of the chart
+nameOverride: ""
+
+# -- Override the full name of the chart
+fullnameOverride: ""
+
+# -- Override the namespace for all resources
+namespaceOverride: ""
+
+# -- Create the namespace if it doesn't exist
+createNamespace: true
+
+# -- Additional annotations for the namespace
+namespaceAnnotations: {}
+
+# -- Image pull secrets for all images
+imagePullSecrets: []
+# - name: myregistrykey
+
+# -- Node selector for all pods
+nodeSelector:
+  kubernetes.io/os: linux
+
+# -- Tolerations for all pods  
+tolerations:
+- key: CriticalAddonsOnly
+  operator: Exists
+- key: node-role.kubernetes.io/control-plane
+  operator: Exists
+  effect: NoSchedule
+- key: node-role.kubernetes.io/master
+  operator: Exists
+  effect: NoSchedule
+
+# -- Priority class name for all pods
+priorityClassName: system-node-critical
+
+# RBAC configuration
+rbac:
+  # -- Create RBAC resources
+  create: true
+  # -- Additional rules for the ClusterRole
+  additionalRules: []
+
+# System Upgrade Controller configuration
+controller:
+  # -- Number of controller replicas
+  replicaCount: 1
+
+  # Image configuration
+  image:
+    # -- Container registry for controller image. Leave empty to use Docker Hub
+    registry: ""
+    # -- Controller image repository
+    repository: rancher/system-upgrade-controller
+    # -- Controller image pull policy
+    pullPolicy: IfNotPresent
+    # -- Controller image tag (overrides the image tag whose default is the chart appVersion)
+    tag: ""
+
+  # -- Additional annotations for the controller deployment
+  annotations: {}
+
+  # -- Additional annotations for controller pods
+  podAnnotations: {}
+
+  # Pod Security Context for controller
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Security Context for controller container
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    capabilities:
+      drop:
+      - ALL
+
+  # Service Account configuration
+  serviceAccount:
+    # -- Create a service account
+    create: true
+    # -- Annotations to add to the service account
+    annotations: {}
+    # -- The name of the service account to use. If not set, a name is generated using the fullname template
+    name: ""
+    # -- Auto-mount the service account token
+    automountServiceAccountToken: true
+    # -- Image pull secrets for the service account
+    imagePullSecrets: []
+
+  # ConfigMap configuration
+  configMap:
+    # -- Create a ConfigMap for controller configuration
+    create: false
+    # -- Data for the ConfigMap
+    data: {}
+
+  # Controller environment variables
+  # -- Enable debug mode
+  debug: false
+  # -- Number of worker threads
+  threads: 2
+  # -- Job active deadline in seconds
+  jobActiveDeadlineSeconds: 900
+  # -- Job backoff limit
+  jobBackoffLimit: 6
+  # -- Image pull policy for upgrade jobs
+  jobImagePullPolicy: IfNotPresent
+  # -- Run upgrade jobs as privileged containers
+  jobPrivileged: true
+  # -- TTL seconds after finished for upgrade jobs
+  jobTtlSecondsAfterFinished: 900
+  # -- Plan polling interval
+  planPollingInterval: 15m
+
+  # -- Additional environment variables for controller
+  extraEnv: []
+  # - name: CUSTOM_ENV_VAR
+  #   value: "custom-value"
+
+  # Liveness probe configuration
+  livenessProbe:
+    # -- Enable liveness probe
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    successThreshold: 1
+    failureThreshold: 3
+
+  # Readiness probe configuration
+  readinessProbe:
+    # -- Enable readiness probe
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+
+  # Controller resource limits and requests
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # -- Affinity configuration for controller pod
+  affinity: {}
+
+  # -- Additional volumes for controller pod
+  volumes: []
+
+  # -- Additional volume mounts for controller container
+  volumeMounts: []
+
+# Kubectl image configuration (used by upgrade jobs)
+kubectl:
+  image:
+    # -- Container registry for kubectl image. Leave empty to use Docker Hub
+    registry: ""
+    # -- Kubectl image repository
+    repository: rancher/kubectl
+    # -- Kubectl image tag
+    tag: v1.29.0
+
+# Upgrade Plans configuration
+plans:
+  # System plan configuration (for control-plane nodes)
+  system:
+    # -- Enable system plan
+    enabled: true
+    # -- Additional annotations for system plan
+    annotations: {}
+    # -- Concurrency for system plan upgrades
+    concurrency: 1
+    # -- Cordon nodes during upgrade
+    cordon: true
+    # -- Drain configuration for system plan
+    drain:
+      force: true
+      skipWaitForDeleteTimeout: 60
+      ignoreDaemonSets: true
+      deleteEmptyDirData: true
+      disableEviction: false
+    # -- K3s/RKE2 version to upgrade to
+    version: "v1.29.0+k3s1"
+    # -- Service account name for system plan jobs
+    serviceAccountName: ""
+
+    # Node selector for system plan
+    nodeSelector:
+      matchLabels: {}
+      matchExpressions: []
+      # - key: "node-role.kubernetes.io/master"
+      #   operator: In
+      #   values: ["true"]
+
+    # -- Tolerations for system plan jobs
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule
+
+    # Upgrade job configuration
+    upgrade:
+      # -- Image for system upgrade job
+      image: rancher/k3s-upgrade
+      # -- Command for system upgrade
+      command: []
+      # -- Args for system upgrade
+      args: []
+      # -- Environment variables for system upgrade
+      env: []
+      # - name: INSTALL_K3S_SKIP_START
+      #   value: "true"
+      # -- Environment variables from ConfigMaps/Secrets
+      envFrom: []
+
+  # Agent plan configuration (for worker nodes)  
+  agent:
+    # -- Enable agent plan
+    enabled: true
+    # -- Additional annotations for agent plan
+    annotations: {}
+    # -- Concurrency for agent plan upgrades
+    concurrency: 2
+    # -- Cordon nodes during upgrade
+    cordon: true
+    # -- Drain configuration for agent plan
+    drain:
+      force: true
+      skipWaitForDeleteTimeout: 60
+      ignoreDaemonSets: true
+      deleteEmptyDirData: true
+      disableEviction: false
+    # -- K3s/RKE2 version to upgrade to
+    version: "v1.29.0+k3s1"
+    # -- Service account name for agent plan jobs
+    serviceAccountName: ""
+
+    # Node selector for agent plan
+    nodeSelector:
+      matchLabels: {}
+      matchExpressions: []
+
+    # -- Tolerations for agent plan jobs
+    tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+
+    # Prepare job configuration
+    prepare:
+      # -- Image for agent prepare job
+      image: rancher/k3s-upgrade
+
+    # Upgrade job configuration
+    upgrade:
+      # -- Image for agent upgrade job
+      image: rancher/k3s-upgrade
+      # -- Command for agent upgrade
+      command: []
+      # -- Args for agent upgrade
+      args: []
+      # -- Environment variables for agent upgrade
+      env: []
+      # - name: INSTALL_K3S_SKIP_START
+      #   value: "true"
+      # -- Environment variables from ConfigMaps/Secrets
+      envFrom: []
