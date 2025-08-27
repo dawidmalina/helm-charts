@@ -49,3 +49,20 @@ volumes:
 volumeMounts:
   - mountPath: /opt/data
     name: sqlite
+
+dnsConfig:
+  enabled: false
+  # Custom nameservers to resolve external domains like GitHub API
+  nameservers:
+    - "8.8.8.8"      # Google DNS - reliable for external resolution
+    - "1.1.1.1"      # Cloudflare DNS - fast alternative
+  # DNS search domains - typically your cluster domain
+  searches: []
+  # DNS options for fine-tuning resolution behavior
+  options:
+    - name: ndots
+      value: "2"     # Reduces DNS queries for external domains
+    - name: timeout
+      value: "2"     # Faster timeout for failed queries
+    - name: attempts
+      value: "2"     # Limit retry attempts
