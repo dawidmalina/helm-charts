@@ -464,3 +464,18 @@ namespaceOverride: ""
 #       key: value
 #     annotations:
 #       key: value
+
+## dockerd configuration for dind mode
+## These parameters optimize Docker daemon performance and resource usage
+dockerd:
+  ## Limits network stack to prevent fragmentation
+  mtu: 1450
+  ## Limits concurrent downloads to prevent network congestion and reduce memory usage
+  maxConcurrentDownloads: 4
+  ## Limits concurrent uploads to prevent network saturation
+  maxConcurrentUploads: 2
+  ## Disables userland proxy to reduce overhead and improve networking performance
+  userlandProxy: false
+  ## Configures cgroup driver - should match container runtime configuration
+  ## cgroupfs is default for most Docker installations, systemd for newer systems
+  cgroupDriver: "cgroupfs"
