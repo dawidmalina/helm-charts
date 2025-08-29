@@ -101,9 +101,13 @@ volumeMounts:
 image: {{ $val.image }}
 args:
   - dockerd
-  - --mtu=1450
   - --host=unix:///var/run/docker.sock
   - --group=$(DOCKER_GROUP_GID)
+  - --mtu={{ $.Values.dockerd.mtu | default 1450 }}
+  - --max-concurrent-downloads={{ $.Values.dockerd.maxConcurrentDownloads | default 4 }}
+  - --max-concurrent-uploads={{ $.Values.dockerd.maxConcurrentUploads | default 2 }}
+  - --userland-proxy={{ $.Values.dockerd.userlandProxy | default false }}
+  - --exec-opt=native.cgroupdriver={{ $.Values.dockerd.cgroupDriver | default "cgroupfs" }}
 env:
   - name: DOCKER_GROUP_GID
     value: "123"
