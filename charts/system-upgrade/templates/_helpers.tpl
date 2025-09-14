@@ -118,20 +118,3 @@ Create common node selectors
 {{- end }}
 {{- end }}
 
-{{/*
-Generate common pod security context
-*/}}
-{{- define "system-upgrade.podSecurityContext" -}}
-{{- with .Values.controller.podSecurityContext }}
-{{- toYaml . }}
-{{- end }}
-{{- end }}
-
-{{/*
-Generate common security context
-*/}}
-{{- define "system-upgrade.securityContext" -}}
-{{- with .Values.controller.securityContext }}
-{{- toYaml . }}
-{{- end }}
-{{- end }}
