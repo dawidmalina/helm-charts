@@ -192,12 +192,14 @@ plans:
     # -- Cordon nodes during upgrade
     cordon: true
     # -- Drain configuration for system plan
-    drain:
-      force: true
-      skipWaitForDeleteTimeout: 60
-      ignoreDaemonSets: true
-      deleteEmptyDirData: true
-      disableEviction: false
+    drain: {}
+    # Legacy drain configuration (commented out)
+    # drain:
+    #   force: true
+    #   skipWaitForDeleteTimeout: 60
+    #   ignoreDaemonSets: true
+    #   deleteEmptyDirData: true
+    #   disableEviction: false
     # -- K3s/RKE2 version to upgrade to
     version: "v1.29.0+k3s1"
     # -- Service account name for system plan jobs
@@ -248,12 +250,14 @@ plans:
     # -- Cordon nodes during upgrade
     cordon: true
     # -- Drain configuration for agent plan
-    drain:
-      force: true
-      skipWaitForDeleteTimeout: 60
-      ignoreDaemonSets: true
-      deleteEmptyDirData: true
-      disableEviction: false
+    drain: {}
+    # Legacy drain configuration (commented out)
+    # drain:
+    #   force: true
+    #   skipWaitForDeleteTimeout: 60
+    #   ignoreDaemonSets: true
+    #   deleteEmptyDirData: true
+    #   disableEviction: false
     # -- K3s/RKE2 version to upgrade to
     version: "v1.29.0+k3s1"
     # -- Service account name for agent plan jobs
