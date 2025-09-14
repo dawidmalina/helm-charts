@@ -79,7 +79,7 @@ spec:
   prepare:
     image: ubuntu:22.04
     command: ["/bin/bash"]
-    args: ["-c", "/scripts/pre-upgrade-validation.sh"]
+    args: ["-c", "apt-get update && apt-get install -y curl && curl -LO https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl && chmod +x kubectl && mv kubectl /usr/local/bin/ && /scripts/pre-upgrade-validation.sh"]
     securityContext:
       privileged: true
       runAsUser: 0
@@ -100,14 +100,12 @@ spec:
       value: "info"
     - name: ENABLE_SECURITY_UPDATES_ONLY
       value: "true"
-    - name: KUBECTL_IMAGE
-      value: "rancher/kubectl:v1.28.0"
   
   # Main OS upgrade job
   upgrade:
     image: ubuntu:22.04
     command: ["/bin/bash"]
-    args: ["-c", "/scripts/os-upgrade.sh"]
+    args: ["-c", "apt-get update && apt-get install -y curl && curl -LO https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl && chmod +x kubectl && mv kubectl /usr/local/bin/ && /scripts/os-upgrade.sh"]
     securityContext:
       privileged: true
       runAsUser: 0
@@ -138,6 +136,10 @@ spec:
       value: "/host/var/run/reboot-required"
     - name: MAX_UPGRADE_TIME
       value: "1800" # 30 minutes
+    - name: KUBERNETES_SERVICE_HOST
+      value: "kubernetes.default.svc"
+    - name: KUBERNETES_SERVICE_PORT
+      value: "443"
   
   # Volumes for host access and scripts
   volumes:
