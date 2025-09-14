@@ -76,10 +76,6 @@ spec:
           successThreshold: {{ .Values.controller.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.controller.readinessProbe.failureThreshold }}
         {{- end }}
-        ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
         {{- with .Values.controller.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
