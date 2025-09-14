@@ -31,12 +31,16 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "system-upgrade.serviceAccountName" . }}
+      {{- with .Values.controller.podSecurityContext }}
       securityContext:
-        {{- include "system-upgrade.podSecurityContext" . | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
+        {{- with .Values.controller.securityContext }}
         securityContext:
-          {{- include "system-upgrade.securityContext" . | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         image: {{ include "system-upgrade.controllerImage" . }}
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         envFrom:
