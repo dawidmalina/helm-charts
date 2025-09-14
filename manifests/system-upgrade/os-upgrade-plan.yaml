@@ -1,0 +1,597 @@
+---
+# OS Upgrade Plan for K3s nodes using chroot approach
+# This plan performs Ubuntu/Debian OS upgrades on K3s cluster nodes
+# IMPORTANT: This plan is disabled by default
+# To enable: kubectl patch plan os-upgrade-plan -p '{"spec":{"nodeSelector":{"matchExpressions":[{"key":"kubernetes.io/arch","operator":"In","values":["amd64"]},{"key":"kubernetes.io/os","operator":"In","values":["linux"]},{"key":"upgrade.cattle.io/os-upgrade-enabled","operator":"In","values":["true"]}]}}}'
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: os-upgrade-plan
+  namespace: system-upgrade
+  labels:
+    app.kubernetes.io/name: system-upgrade-controller
+    app.kubernetes.io/component: os-upgrade-plan
+    upgrade.cattle.io/plan-type: os-upgrade
+  annotations:
+    upgrade.cattle.io/description: "Production-ready OS upgrade plan for K3s nodes"
+    upgrade.cattle.io/version: "1.0.0"
+    upgrade.cattle.io/disabled: "true"
+spec:
+  # Safe rolling updates - one node at a time
+  concurrency: 1
+  
+  # Cordon and drain nodes during upgrade
+  cordon: true
+  drain:
+    force: true
+    skipWaitForDeleteTimeout: 300
+    ignoreDaemonSets: true
+    deleteEmptyDirData: true
+    disableEviction: false
+    timeout: 900s
+  
+  # DISABLED BY DEFAULT - requires explicit node labeling to activate
+  # Target amd64 Linux nodes that are explicitly labeled for OS upgrades
+  nodeSelector:
+    matchExpressions:
+    - key: kubernetes.io/arch
+      operator: In
+      values: ["amd64"]
+    - key: kubernetes.io/os
+      operator: In
+      values: ["linux"]
+    # This label must be manually added to enable upgrades on a node
+    - key: upgrade.cattle.io/os-upgrade-enabled
+      operator: In
+      values: ["true"]
+    # Exclude nodes that are already being upgraded
+    - key: upgrade.cattle.io/os-upgrade-in-progress
+      operator: DoesNotExist
+  
+  # Tolerations to run on all nodes including control-plane
+  tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/controlplane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/etcd
+    operator: Exists
+    effect: NoExecute
+  
+  # Service account with necessary permissions
+  serviceAccountName: system-upgrade
+  
+  # Version detection - matches container OS version with host
+  version: "detect-from-host"
+  
+  # Pre-upgrade validation job
+  prepare:
+    image: ubuntu:22.04
+    command: ["/bin/bash"]
+    args: ["-c", "/scripts/pre-upgrade-validation.sh"]
+    securityContext:
+      privileged: true
+      runAsUser: 0
+    volumeMounts:
+    - name: host-root
+      mountPath: /host
+      mountPropagation: HostToContainer
+    - name: upgrade-scripts
+      mountPath: /scripts
+    - name: var-log
+      mountPath: /var/log/upgrade
+    env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: UPGRADE_LOG_LEVEL
+      value: "info"
+    - name: ENABLE_SECURITY_UPDATES_ONLY
+      value: "true"
+    - name: KUBECTL_IMAGE
+      value: "rancher/kubectl:v1.28.0"
+  
+  # Main OS upgrade job
+  upgrade:
+    image: ubuntu:22.04
+    command: ["/bin/bash"]
+    args: ["-c", "/scripts/os-upgrade.sh"]
+    securityContext:
+      privileged: true
+      runAsUser: 0
+      capabilities:
+        add: ["SYS_ADMIN", "SYS_CHROOT"]
+    volumeMounts:
+    - name: host-root
+      mountPath: /host
+      mountPropagation: HostToContainer
+    - name: upgrade-scripts
+      mountPath: /scripts
+    - name: var-log
+      mountPath: /var/log/upgrade
+    - name: host-proc
+      mountPath: /host-proc
+    - name: host-sys
+      mountPath: /host-sys
+    env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: UPGRADE_LOG_LEVEL
+      value: "info"
+    - name: ENABLE_SECURITY_UPDATES_ONLY
+      value: "true"
+    - name: REBOOT_REQUIRED_FILE
+      value: "/host/var/run/reboot-required"
+    - name: MAX_UPGRADE_TIME
+      value: "1800" # 30 minutes
+  
+  # Volumes for host access and scripts
+  volumes:
+  - name: host-root
+    hostPath:
+      path: /
+      type: Directory
+  - name: host-proc
+    hostPath:
+      path: /proc
+      type: Directory
+  - name: host-sys
+    hostPath:
+      path: /sys
+      type: Directory
+  - name: var-log
+    hostPath:
+      path: /var/log/system-upgrade
+      type: DirectoryOrCreate
+  - name: upgrade-scripts
+    configMap:
+      name: os-upgrade-scripts
+      defaultMode: 0755
+
+---
+# ConfigMap containing upgrade scripts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: os-upgrade-scripts
+  namespace: system-upgrade
+  labels:
+    app.kubernetes.io/name: system-upgrade-controller
+    app.kubernetes.io/component: os-upgrade-scripts
+data:
+  pre-upgrade-validation.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    
+    # Pre-upgrade validation script
+    # Validates system state before performing OS upgrade
+    
+    source /scripts/common-functions.sh
+    
+    log_info "Starting pre-upgrade validation on node ${NODE_NAME}"
+    
+    # Validate host OS compatibility
+    if ! validate_host_os; then
+        log_error "Host OS validation failed"
+        exit 1
+    fi
+    
+    # Check available disk space
+    if ! check_disk_space; then
+        log_error "Insufficient disk space for upgrade"
+        exit 1
+    fi
+    
+    # Validate package manager state
+    if ! validate_package_manager; then
+        log_error "Package manager validation failed"
+        exit 1
+    fi
+    
+    # Check for running upgrade processes
+    if ! check_existing_upgrades; then
+        log_error "Another upgrade process is running"
+        exit 1
+    fi
+    
+    # Validate network connectivity
+    if ! validate_network_connectivity; then
+        log_error "Network connectivity validation failed"
+        exit 1
+    fi
+    
+    # Create upgrade lock file
+    create_upgrade_lock
+    
+    log_info "Pre-upgrade validation completed successfully"
+    
+  os-upgrade.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    
+    # Main OS upgrade script using chroot approach
+    # Performs Ubuntu/Debian package upgrades on K3s nodes
+    
+    source /scripts/common-functions.sh
+    
+    log_info "Starting OS upgrade on node ${NODE_NAME}"
+    
+    # Trap to ensure cleanup
+    trap cleanup_on_exit EXIT
+    
+    # Validate upgrade lock exists (from prepare phase)
+    if ! validate_upgrade_lock; then
+        log_error "Upgrade lock not found - prepare phase may have failed"
+        exit 1
+    fi
+    
+    # Setup chroot environment
+    if ! setup_chroot_environment; then
+        log_error "Failed to setup chroot environment"
+        exit 1
+    fi
+    
+    # Perform the actual upgrade
+    if ! perform_os_upgrade; then
+        log_error "OS upgrade failed"
+        cleanup_chroot
+        exit 1
+    fi
+    
+    # Post-upgrade verification
+    if ! post_upgrade_verification; then
+        log_error "Post-upgrade verification failed"
+        cleanup_chroot
+        exit 1
+    fi
+    
+    # Handle reboot if required
+    handle_reboot_if_required
+    
+    log_info "OS upgrade completed successfully on node ${NODE_NAME}"
+    
+  common-functions.sh: |
+    #!/bin/bash
+    
+    # Common functions for OS upgrade scripts
+    
+    # Logging functions
+    log_info() {
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] [INFO] $*" | tee -a /var/log/upgrade/upgrade.log
+    }
+    
+    log_warn() {
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] [WARN] $*" | tee -a /var/log/upgrade/upgrade.log
+    }
+    
+    log_error() {
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] [ERROR] $*" | tee -a /var/log/upgrade/upgrade.log >&2
+    }
+    
+    # Validate host OS compatibility
+    validate_host_os() {
+        log_info "Validating host OS compatibility"
+        
+        if [ ! -f /host/etc/os-release ]; then
+            log_error "/host/etc/os-release not found"
+            return 1
+        fi
+        
+        # Source OS information
+        . /host/etc/os-release
+        
+        # Check for supported distributions
+        case "$ID" in
+            ubuntu|debian)
+                log_info "Detected supported OS: $PRETTY_NAME"
+                return 0
+                ;;
+            *)
+                log_error "Unsupported OS: $PRETTY_NAME"
+                return 1
+                ;;
+        esac
+    }
+    
+    # Check available disk space
+    check_disk_space() {
+        log_info "Checking available disk space"
+        
+        # Check root filesystem space (need at least 2GB free)
+        local available
+        available=$(df /host --output=avail | tail -n1)
+        local required=$((2 * 1024 * 1024)) # 2GB in KB
+        
+        if [ "$available" -lt "$required" ]; then
+            log_error "Insufficient disk space. Available: ${available}KB, Required: ${required}KB"
+            return 1
+        fi
+        
+        log_info "Disk space check passed. Available: ${available}KB"
+        return 0
+    }
+    
+    # Validate package manager state
+    validate_package_manager() {
+        log_info "Validating package manager state"
+        
+        # Check if package manager is available and not locked
+        if ! chroot /host which apt-get >/dev/null 2>&1; then
+            log_error "apt-get not found in chroot environment"
+            return 1
+        fi
+        
+        # Check for lock files
+        if [ -f /host/var/lib/dpkg/lock-frontend ] || [ -f /host/var/lib/apt/lists/lock ]; then
+            log_error "Package manager is locked"
+            return 1
+        fi
+        
+        log_info "Package manager validation passed"
+        return 0
+    }
+    
+    # Check for existing upgrade processes
+    check_existing_upgrades() {
+        log_info "Checking for existing upgrade processes"
+        
+        # Check for upgrade lock file
+        if [ -f /host/var/run/system-upgrade.lock ]; then
+            log_error "System upgrade lock file exists"
+            return 1
+        fi
+        
+        # Check for running apt processes
+        if chroot /host pgrep -f "apt|dpkg|unattended-upgrade" >/dev/null 2>&1; then
+            log_error "Package management processes are running"
+            return 1
+        fi
+        
+        log_info "No existing upgrade processes found"
+        return 0
+    }
+    
+    # Validate network connectivity
+    validate_network_connectivity() {
+        log_info "Validating network connectivity"
+        
+        # Test connectivity to package repositories
+        if ! chroot /host timeout 10 apt-get update -qq 2>/dev/null; then
+            log_error "Cannot connect to package repositories"
+            return 1
+        fi
+        
+        log_info "Network connectivity validation passed"
+        return 0
+    }
+    
+    # Create upgrade lock file
+    create_upgrade_lock() {
+        log_info "Creating upgrade lock file"
+        echo "${NODE_NAME}-$(date +%s)" > /host/var/run/system-upgrade.lock
+        
+        # Label node as upgrade in progress
+        kubectl label node "${NODE_NAME}" \
+            upgrade.cattle.io/os-upgrade-in-progress="$(date -Iseconds)" \
+            --overwrite 2>/dev/null || log_warn "Failed to label node as upgrade in progress"
+    }
+    
+    # Validate upgrade lock exists
+    validate_upgrade_lock() {
+        [ -f /host/var/run/system-upgrade.lock ]
+    }
+    
+    # Setup chroot environment
+    setup_chroot_environment() {
+        log_info "Setting up chroot environment"
+        
+        # Mount necessary filesystems for chroot
+        mount --bind /dev /host/dev 2>/dev/null || true
+        mount --bind /proc /host/proc 2>/dev/null || true
+        mount --bind /sys /host/sys 2>/dev/null || true
+        mount --bind /run /host/run 2>/dev/null || true
+        
+        # Create resolv.conf if needed
+        if [ ! -f /host/etc/resolv.conf ]; then
+            cp /etc/resolv.conf /host/etc/resolv.conf
+        fi
+        
+        log_info "Chroot environment setup completed"
+        return 0
+    }
+    
+    # Perform OS upgrade
+    perform_os_upgrade() {
+        log_info "Performing OS upgrade"
+        
+        # Configure apt for unattended upgrades
+        cat > /host/etc/apt/apt.conf.d/50unattended-upgrades-system-upgrade << EOF
+    Unattended-Upgrade::Allowed-Origins {
+        "\${distro_id}:\${distro_codename}-security";
+    };
+    Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+    Unattended-Upgrade::MinimalSteps "true";
+    Unattended-Upgrade::Remove-Unused-Dependencies "true";
+    Unattended-Upgrade::Automatic-Reboot "false";
+    Unattended-Upgrade::SyslogEnable "true";
+    EOF
+        
+        # Update package lists
+        log_info "Updating package lists"
+        if ! chroot /host apt-get update; then
+            log_error "Failed to update package lists"
+            return 1
+        fi
+        
+        # Perform security updates only if enabled
+        if [ "${ENABLE_SECURITY_UPDATES_ONLY:-true}" = "true" ]; then
+            log_info "Performing security-only updates"
+            if ! chroot /host timeout "${MAX_UPGRADE_TIME:-1800}" unattended-upgrade -v; then
+                log_error "Security updates failed"
+                return 1
+            fi
+        else
+            log_info "Performing full system upgrade"
+            if ! chroot /host timeout "${MAX_UPGRADE_TIME:-1800}" apt-get -y upgrade; then
+                log_error "System upgrade failed"
+                return 1
+            fi
+        fi
+        
+        # Clean up package cache
+        chroot /host apt-get clean
+        
+        log_info "OS upgrade completed successfully"
+        return 0
+    }
+    
+    # Post-upgrade verification
+    post_upgrade_verification() {
+        log_info "Performing post-upgrade verification"
+        
+        # Verify package manager is in good state
+        if ! chroot /host dpkg --configure -a; then
+            log_error "Package configuration failed"
+            return 1
+        fi
+        
+        # Check for broken packages
+        if chroot /host apt-get check 2>&1 | grep -q "broken"; then
+            log_error "Broken packages detected"
+            return 1
+        fi
+        
+        # Verify critical services are available
+        local critical_services=("systemd" "networking")
+        for service in "${critical_services[@]}"; do
+            if ! chroot /host systemctl is-enabled "$service" >/dev/null 2>&1; then
+                log_warn "Critical service $service is not enabled"
+            fi
+        done
+        
+        log_info "Post-upgrade verification completed successfully"
+        return 0
+    }
+    
+    # Handle reboot if required
+    handle_reboot_if_required() {
+        if [ -f "${REBOOT_REQUIRED_FILE:-/host/var/run/reboot-required}" ]; then
+            log_info "Reboot required after upgrade - marking node for reboot"
+            
+            # Create reboot annotation for the node
+            kubectl annotate node "${NODE_NAME}" \
+                upgrade.cattle.io/reboot-required="$(date -Iseconds)" \
+                --overwrite || log_warn "Failed to annotate node for reboot"
+            
+            # Schedule reboot (systemd will handle this after pod exits)
+            chroot /host systemctl reboot || log_error "Failed to schedule reboot"
+        else
+            log_info "No reboot required after upgrade"
+        fi
+    }
+    
+    # Cleanup chroot environment
+    cleanup_chroot() {
+        log_info "Cleaning up chroot environment"
+        
+        # Unmount filesystems
+        umount /host/dev 2>/dev/null || true
+        umount /host/proc 2>/dev/null || true
+        umount /host/sys 2>/dev/null || true
+        umount /host/run 2>/dev/null || true
+    }
+    
+    # Generate upgrade report
+    generate_upgrade_report() {
+        log_info "Generating upgrade report"
+        
+        local report_file="/var/log/upgrade/upgrade-report-${NODE_NAME}-$(date +%s).json"
+        
+        cat > "$report_file" << EOF
+    {
+      "node_name": "${NODE_NAME}",
+      "upgrade_timestamp": "$(date -Iseconds)",
+      "upgrade_type": "os-security-updates",
+      "reboot_required": $([ -f "${REBOOT_REQUIRED_FILE:-/host/var/run/reboot-required}" ] && echo "true" || echo "false"),
+      "packages_upgraded": $(chroot /host apt list --upgradable 2>/dev/null | wc -l || echo "0"),
+      "status": "completed"
+    }
+    EOF
+        
+        log_info "Upgrade report generated: $report_file"
+    }
+    
+    # Cleanup on exit
+    cleanup_on_exit() {
+        local exit_code=$?
+        
+        if [ $exit_code -eq 0 ]; then
+            log_info "Upgrade completed successfully"
+            generate_upgrade_report
+            
+            # Remove upgrade in progress label and add completion annotation
+            kubectl label node "${NODE_NAME}" \
+                upgrade.cattle.io/os-upgrade-in-progress- \
+                --overwrite 2>/dev/null || true
+            kubectl annotate node "${NODE_NAME}" \
+                upgrade.cattle.io/os-upgrade-completed="$(date -Iseconds)" \
+                --overwrite 2>/dev/null || true
+        else
+            log_error "Upgrade failed with exit code $exit_code"
+            
+            # Remove upgrade in progress label and add failure annotation
+            kubectl label node "${NODE_NAME}" \
+                upgrade.cattle.io/os-upgrade-in-progress- \
+                --overwrite 2>/dev/null || true
+            kubectl annotate node "${NODE_NAME}" \
+                upgrade.cattle.io/os-upgrade-failed="$(date -Iseconds)" \
+                --overwrite 2>/dev/null || true
+        fi
+        
+        # Always cleanup
+        cleanup_chroot
+        
+        # Remove upgrade lock
+        rm -f /host/var/run/system-upgrade.lock
+        
+        # Remove temporary apt configuration
+        rm -f /host/etc/apt/apt.conf.d/50unattended-upgrades-system-upgrade
+        
+        exit $exit_code
+    }
+
+  post-upgrade-verification.sh: |
+    #!/bin/bash
+    set -euo pipefail
+    
+    # Post-upgrade verification script
+    # Runs after successful upgrade to verify system state
+    
+    source /scripts/common-functions.sh
+    
+    log_info "Starting post-upgrade verification on node ${NODE_NAME}"
+    
+    # Verify system is functional
+    if ! post_upgrade_verification; then
+        log_error "Post-upgrade verification failed"
+        exit 1
+    fi
+    
+    # Generate upgrade report
+    generate_upgrade_report
+    
+    log_info "Post-upgrade verification completed successfully"
