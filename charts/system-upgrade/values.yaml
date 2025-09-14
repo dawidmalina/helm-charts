@@ -104,7 +104,7 @@ controller:
   # ConfigMap configuration
   configMap:
     # -- Create a ConfigMap for controller configuration
-    create: false
+    create: true
     # -- Data for the ConfigMap
     data: {}
 
