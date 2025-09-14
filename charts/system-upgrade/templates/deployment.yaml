@@ -80,12 +80,10 @@ spec:
         - name: http
           containerPort: 8080
           protocol: TCP
+        {{- with .Values.controller.resources }}
         resources:
-          {{- if .Values.controller.resources }}
-          {{- toYaml .Values.controller.resources | nindent 10 }}
-          {{- else }}
-          {}
-          {{- end }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         {{- with .Values.controller.volumeMounts }}
         volumeMounts:
           {{- toYaml . | nindent 10 }}

@@ -131,24 +131,10 @@ controller:
   #   value: "custom-value"
 
   # Liveness probe configuration
-  livenessProbe:
-    # -- Enable liveness probe
-    enabled: false
-    initialDelaySeconds: 30
-    periodSeconds: 30
-    timeoutSeconds: 10
-    successThreshold: 1
-    failureThreshold: 3
+  livenessProbe: {}
 
   # Readiness probe configuration
-  readinessProbe:
-    # -- Enable readiness probe
-    enabled: false
-    initialDelaySeconds: 5
-    periodSeconds: 10
-    timeoutSeconds: 5
-    successThreshold: 1
-    failureThreshold: 3
+  readinessProbe: {}
 
   # Controller resource limits and requests
   resources: {}
@@ -172,6 +158,7 @@ controller:
 kubectl:
   image:
     # -- Container registry for kubectl image. Leave empty to use Docker Hub
+    # Example: "harbor.in.dawidmalina.pl/proxy" (without trailing slash)
     registry: ""
     # -- Kubectl image repository
     repository: rancher/kubectl
