@@ -103,8 +103,6 @@ controller:
 
   # ConfigMap configuration
   configMap:
-    # -- Create a ConfigMap for controller configuration
-    create: true
     # -- Data for the ConfigMap
     data: {}
 

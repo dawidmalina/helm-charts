@@ -15,8 +15,6 @@ data:
   SYSTEM_UPGRADE_JOB_PRIVILEGED: {{ .Values.controller.jobPrivileged | quote }}
   SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISHED: {{ .Values.controller.jobTtlSecondsAfterFinished | quote }}
   SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL: {{ .Values.controller.planPollingInterval | quote }}
-{{- if .Values.controller.configMap.create }}
   {{- range $key, $value := .Values.controller.configMap.data }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
-{{- end }}
