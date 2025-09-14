@@ -1,4 +1,3 @@
-{{- if .Values.controller.configMap.create }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,7 +6,15 @@ metadata:
   labels:
     {{- include "system-upgrade.labels" . | nindent 4 }}
 data:
+  SYSTEM_UPGRADE_CONTROLLER_DEBUG: {{ .Values.controller.debug | quote }}
+  SYSTEM_UPGRADE_CONTROLLER_THREADS: {{ .Values.controller.threads | quote }}
+  SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS: {{ .Values.controller.jobActiveDeadlineSeconds | quote }}
+  SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: {{ .Values.controller.jobBackoffLimit | quote }}
+  SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY: {{ .Values.controller.jobImagePullPolicy | quote }}
+  SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: {{ include "system-upgrade.kubectlImage" . }}
+  SYSTEM_UPGRADE_JOB_PRIVILEGED: {{ .Values.controller.jobPrivileged | quote }}
+  SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISHED: {{ .Values.controller.jobTtlSecondsAfterFinished | quote }}
+  SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL: {{ .Values.controller.planPollingInterval | quote }}
   {{- range $key, $value := .Values.controller.configMap.data }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
-{{- end }}

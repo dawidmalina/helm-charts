@@ -39,25 +39,18 @@ spec:
           {{- include "system-upgrade.securityContext" . | nindent 10 }}
         image: {{ include "system-upgrade.controllerImage" . }}
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "system-upgrade.fullname" . }}-config
         env:
-        - name: SYSTEM_UPGRADE_CONTROLLER_DEBUG
-          value: {{ .Values.controller.debug | quote }}
-        - name: SYSTEM_UPGRADE_CONTROLLER_THREADS
-          value: {{ .Values.controller.threads | quote }}
-        - name: SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS
-          value: {{ .Values.controller.jobActiveDeadlineSeconds | quote }}
-        - name: SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT
-          value: {{ .Values.controller.jobBackoffLimit | quote }}
-        - name: SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY
-          value: {{ .Values.controller.jobImagePullPolicy | quote }}
-        - name: SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE
-          value: {{ include "system-upgrade.kubectlImage" . }}
-        - name: SYSTEM_UPGRADE_JOB_PRIVILEGED
-          value: {{ .Values.controller.jobPrivileged | quote }}
-        - name: SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISHED
-          value: {{ .Values.controller.jobTtlSecondsAfterFinished | quote }}
-        - name: SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL
-          value: {{ .Values.controller.planPollingInterval | quote }}
+        - name: SYSTEM_UPGRADE_CONTROLLER_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['app.kubernetes.io/name']
+        - name: SYSTEM_UPGRADE_CONTROLLER_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         {{- with .Values.controller.extraEnv }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
