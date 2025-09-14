@@ -38,7 +38,7 @@ spec:
     image: {{ .Values.plans.agent.prepare.image }}
     args:
     - prepare
-    - server-plan
+    - {{ include "system-upgrade.fullname" . }}-system
   serviceAccountName: {{ .Values.plans.agent.serviceAccountName | default (include "system-upgrade.serviceAccountName" .) }}
   {{- with .Values.plans.agent.tolerations }}
   tolerations:
