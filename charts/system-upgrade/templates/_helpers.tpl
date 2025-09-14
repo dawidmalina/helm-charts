@@ -94,7 +94,7 @@ Create the kubectl image name
 {{- $repository := .Values.kubectl.image.repository }}
 {{- $tag := .Values.kubectl.image.tag }}
 {{- if $registry }}
-{{- printf "%s/%s:%s" $registry $repository $tag }}
+{{- printf "%s%s:%s" $registry $repository $tag }}
 {{- else }}
 {{- printf "%s:%s" $repository $tag }}
 {{- end }}

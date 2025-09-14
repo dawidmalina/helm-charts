@@ -35,6 +35,12 @@ tolerations:
 - key: node-role.kubernetes.io/master
   operator: Exists
   effect: NoSchedule
+- key: node-role.kubernetes.io/controlplane
+  operator: Exists
+  effect: NoSchedule
+- key: node-role.kubernetes.io/etcd
+  operator: Exists
+  effect: NoExecute
 
 # -- Priority class name for all pods
 priorityClassName: system-node-critical
@@ -69,24 +75,19 @@ controller:
   podAnnotations: {}
 
   # Pod Security Context for controller
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 65534
-    runAsGroup: 65534
-    fsGroup: 65534
-    seccompProfile:
-      type: RuntimeDefault
+  podSecurityContext: {}
 
   # Security Context for controller container
   securityContext:
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
-    runAsUser: 65534
-    runAsGroup: 65534
     capabilities:
       drop:
-      - ALL
+        - ALL
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+    seccompProfile:
+      type: RuntimeDefault
 
   # Service Account configuration
   serviceAccount:
@@ -132,7 +133,7 @@ controller:
   # Liveness probe configuration
   livenessProbe:
     # -- Enable liveness probe
-    enabled: true
+    enabled: false
     initialDelaySeconds: 30
     periodSeconds: 30
     timeoutSeconds: 10
@@ -142,7 +143,7 @@ controller:
   # Readiness probe configuration
   readinessProbe:
     # -- Enable readiness probe
-    enabled: true
+    enabled: false
     initialDelaySeconds: 5
     periodSeconds: 10
     timeoutSeconds: 5
@@ -150,16 +151,16 @@ controller:
     failureThreshold: 3
 
   # Controller resource limits and requests
-  resources:
-    limits:
-      cpu: 100m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  resources: {}
 
   # -- Affinity configuration for controller pod
-  affinity: {}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
 
   # -- Additional volumes for controller pod
   volumes: []
