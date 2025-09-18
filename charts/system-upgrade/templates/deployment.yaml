@@ -119,8 +119,6 @@ spec:
           name: etc-ca-certificates
         - emptyDir: {}
           name: tmp
-      nodeSelector:
-        kubernetes.io/os: linux
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
