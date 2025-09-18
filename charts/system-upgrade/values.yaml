@@ -49,8 +49,6 @@ priorityClassName: system-node-critical
 rbac:
   # -- Create RBAC resources
   create: true
-  # -- Additional rules for the ClusterRole
-  additionalRules: []
 
 # System Upgrade Controller configuration
 controller:
