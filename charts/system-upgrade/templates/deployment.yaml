@@ -6,6 +6,7 @@ metadata:
   labels:
     {{- include "system-upgrade.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
+    upgrade.cattle.io/controller: system-upgrade-controller
   {{- with .Values.controller.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,6 +17,7 @@ spec:
     matchLabels:
       {{- include "system-upgrade.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: controller
+      upgrade.cattle.io/controller: system-upgrade-controller
   template:
     metadata:
       {{- with .Values.controller.podAnnotations }}
@@ -50,7 +52,7 @@ spec:
         - name: SYSTEM_UPGRADE_CONTROLLER_NAME
           valueFrom:
             fieldRef:
-              fieldPath: metadata.labels['app.kubernetes.io/name']
+              fieldPath: metadata.labels['upgrade.cattle.io/controller']
         - name: SYSTEM_UPGRADE_CONTROLLER_NAMESPACE
           valueFrom:
             fieldRef:
