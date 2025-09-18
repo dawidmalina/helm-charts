@@ -968,6 +968,32 @@ entries:
   system-upgrade:
   - apiVersion: v2
     appVersion: v0.13.4
+    created: "2025-09-18T10:27:25.843995284Z"
+    description: A Helm chart for the system-upgrade-controller to manage K3s/RKE2
+      cluster upgrades
+    digest: feb40462edaca771094bf59243fe1ff9e9b97ebea651ffac7187f7a12bd89809
+    home: https://github.com/rancher/system-upgrade-controller
+    icon: https://rancher.com/assets/images/brand-logos/rancher-suse-logo-horizontal-white.svg
+    keywords:
+    - rancher
+    - k3s
+    - rke2
+    - upgrade
+    - controller
+    - system-upgrade
+    maintainers:
+    - name: Dawid Malina
+      url: https://github.com/dawidmalina/
+    name: system-upgrade
+    sources:
+    - https://github.com/rancher/system-upgrade-controller
+    - https://github.com/dawidmalina/helm-charts
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.4.1/system-upgrade-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v2
+    appVersion: v0.13.4
     created: "2025-09-18T10:01:11.470728824Z"
     description: A Helm chart for the system-upgrade-controller to manage K3s/RKE2
       cluster upgrades
@@ -1252,4 +1278,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
     version: 0.1.0
-generated: "2025-09-18T10:01:11.470980767Z"
+generated: "2025-09-18T10:27:25.844263758Z"
