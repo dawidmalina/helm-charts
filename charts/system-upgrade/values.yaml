@@ -112,6 +112,8 @@ controller:
   debug: false
   # -- Number of worker threads
   threads: 2
+  # -- Enable leader election
+  leaderElect: true
   # -- Job active deadline in seconds
   jobActiveDeadlineSeconds: 900
   # -- Job backoff limit
