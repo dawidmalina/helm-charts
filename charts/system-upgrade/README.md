@@ -61,7 +61,6 @@ The following table lists the configurable parameters and their default values.
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `rbac.create` | Create RBAC resources | `true` |
-| `rbac.additionalRules` | Additional rules for the ClusterRole | `[]` |
 
 ### Service Account Configuration
 
