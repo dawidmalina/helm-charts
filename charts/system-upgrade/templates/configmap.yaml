@@ -8,6 +8,7 @@ metadata:
 data:
   SYSTEM_UPGRADE_CONTROLLER_DEBUG: {{ .Values.controller.debug | quote }}
   SYSTEM_UPGRADE_CONTROLLER_THREADS: {{ .Values.controller.threads | quote }}
+  SYSTEM_UPGRADE_CONTROLLER_LEADER_ELECT: {{ .Values.controller.leaderElect | quote }}
   SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS: {{ .Values.controller.jobActiveDeadlineSeconds | quote }}
   SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: {{ .Values.controller.jobBackoffLimit | quote }}
   SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY: {{ .Values.controller.jobImagePullPolicy | quote }}
