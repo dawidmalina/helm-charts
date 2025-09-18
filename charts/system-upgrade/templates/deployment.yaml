@@ -17,7 +17,6 @@ spec:
     matchLabels:
       {{- include "system-upgrade.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: controller
-      upgrade.cattle.io/controller: system-upgrade-controller
   template:
     metadata:
       {{- with .Values.controller.podAnnotations }}
