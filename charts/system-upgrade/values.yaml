@@ -21,10 +21,6 @@ namespaceAnnotations: {}
 imagePullSecrets: []
 # - name: myregistrykey
 
-# -- Node selector for all pods
-nodeSelector:
-  kubernetes.io/os: linux
-
 # -- Tolerations for all pods  
 tolerations:
 - key: CriticalAddonsOnly
@@ -138,21 +134,6 @@ controller:
 
   # Controller resource limits and requests
   resources: {}
-
-  # -- Affinity configuration for controller pod
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: node-role.kubernetes.io/control-plane
-                operator: Exists
-
-  # -- Additional volumes for controller pod
-  volumes: []
-
-  # -- Additional volume mounts for controller container
-  volumeMounts: []
 
 # Kubectl image configuration (used by upgrade jobs)
 kubectl:

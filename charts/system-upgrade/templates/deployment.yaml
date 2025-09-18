@@ -12,6 +12,8 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.controller.replicaCount }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "system-upgrade.selectorLabels" . | nindent 6 }}
@@ -90,22 +92,56 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-        {{- with .Values.controller.volumeMounts }}
         volumeMounts:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
-      {{- with .Values.controller.volumes }}
+          - mountPath: /etc/ssl
+            name: etc-ssl
+            readOnly: true
+          - mountPath: /etc/pki
+            name: etc-pki
+            readOnly: true
+          - mountPath: /etc/ca-certificates
+            name: etc-ca-certificates
+            readOnly: true
+          - mountPath: /tmp
+            name: tmp
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.nodeSelector }}
+        - hostPath:
+            path: /etc/ssl
+            type: DirectoryOrCreate
+          name: etc-ssl
+        - hostPath:
+            path: /etc/pki
+            type: DirectoryOrCreate
+          name: etc-pki
+        - hostPath:
+            path: /etc/ca-certificates
+            type: DirectoryOrCreate
+          name: etc-ca-certificates
+        - emptyDir: {}
+          name: tmp
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.controller.affinity }}
+        kubernetes.io/os: linux
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - system-upgrade-controller
+              topologyKey: kubernetes.io/hostname
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
