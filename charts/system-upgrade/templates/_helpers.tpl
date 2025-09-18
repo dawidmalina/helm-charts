@@ -110,15 +110,6 @@ Create common tolerations for system components
 {{- end }}
 
 {{/*
-Create common node selectors
-*/}}
-{{- define "system-upgrade.nodeSelector" -}}
-{{- with .Values.nodeSelector }}
-{{- toYaml . }}
-{{- end }}
-{{- end }}
-
-{{/*
 Create fixed controller role name
 */}}
 {{- define "system-upgrade.controllerRoleName" -}}
