@@ -118,3 +118,17 @@ Create common node selectors
 {{- end }}
 {{- end }}
 
+{{/*
+Create fixed controller role name
+*/}}
+{{- define "system-upgrade.controllerRoleName" -}}
+system-upgrade-controller
+{{- end }}
+
+{{/*
+Create fixed drainer role name
+*/}}
+{{- define "system-upgrade.drainerRoleName" -}}
+system-upgrade-controller-drainer
+{{- end }}
+

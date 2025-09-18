@@ -8,7 +8,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "system-upgrade.fullname" . }}
+  name: {{ include "system-upgrade.controllerRoleName" . }}
 subjects:
   - kind: ServiceAccount
     name: {{ include "system-upgrade.serviceAccountName" . }}

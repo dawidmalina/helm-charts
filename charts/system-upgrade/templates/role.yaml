@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "system-upgrade.fullname" . }}
+  name: {{ include "system-upgrade.controllerRoleName" . }}
   namespace: {{ include "system-upgrade.namespace" . }}
   labels:
     {{- include "system-upgrade.labels" . | nindent 4 }}
