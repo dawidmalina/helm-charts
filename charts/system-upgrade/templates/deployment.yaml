@@ -6,7 +6,6 @@ metadata:
   labels:
     {{- include "system-upgrade.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
-    upgrade.cattle.io/controller: system-upgrade-controller
   {{- with .Values.controller.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -17,6 +16,7 @@ spec:
     matchLabels:
       {{- include "system-upgrade.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: controller
+      upgrade.cattle.io/controller: system-upgrade-controller
   template:
     metadata:
       {{- with .Values.controller.podAnnotations }}
@@ -26,6 +26,7 @@ spec:
       labels:
         {{- include "system-upgrade.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: controller
+        upgrade.cattle.io/controller: system-upgrade-controller
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
