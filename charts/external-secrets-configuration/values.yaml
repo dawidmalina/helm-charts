@@ -2,7 +2,7 @@ clusterSecretStore: default-provider
 refreshInterval: 5m
 # Default decoding strategy for automatic base64 decoding of secrets
 # Can be "Auto", "Base64", "None", or omitted (defaults to "None")
-# See: https://external-secrets.io/v0.19.2/guides/decoding-strategy/
+# See: https://external-secrets.io/latest/guides/decoding-strategy/
 decodingStrategy: ""
 
 objects: {}
@@ -36,4 +36,4 @@ objects: {}
 #     data:
 #       - secretKey: xxx
 #         remoteRef: yyy
-#  # more k8s types: https://external-secrets.io/v0.4.3/guides-common-k8s-secret-types/
+#  # more k8s types: https://external-secrets.io/latest/guides-common-k8s-secret-types/
