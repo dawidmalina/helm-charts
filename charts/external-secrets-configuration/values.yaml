@@ -1,11 +1,16 @@
 clusterSecretStore: default-provider
 refreshInterval: 5m
+# Default decoding strategy for automatic base64 decoding of secrets
+# Can be "Auto", "Base64", "None", or omitted (defaults to "None")
+# See: https://external-secrets.io/v0.19.2/guides/decoding-strategy/
+decodingStrategy: ""
 
 objects: {}
 # objects:
 #   test-multi:
 #     dataFrom:
 #       - remoteRef: SUPER_SECRET
+#         decodingStrategy: "Auto"  # Optional: enable automatic base64 decoding
 
 #   test-templates:
 #     dataFrom:
@@ -16,6 +21,7 @@ objects: {}
 #       - secretKey: foo_property
 #         remoteRef: foo
 #         property: foo_property
+#         decodingStrategy: "Base64"  # Optional: force base64 decoding
 
 #   foo:
 #     data:
@@ -23,6 +29,7 @@ objects: {}
 #         remoteRef: yyy
 #       - secretKey: foo
 #         remoteRef: bar
+#         decodingStrategy: "None"  # Optional: disable decoding for this key
 
 #   bb:
 #     type: kubernetes.io/dockerconfigjson
