@@ -2,6 +2,13 @@
 
 This repository helps define Kubernetes External Secrets in a more readable and very simplified syntax.
 
+## Breaking Changes
+
+### v1.0.0
+- **API Version Migration**: This chart now uses the stable `external-secrets.io/v1` API version instead of `external-secrets.io/v1beta1`
+- Requires External Secrets Operator v0.8.0+ which supports the v1 API
+- No changes to chart configuration are required as the API schema remains compatible
+
 ## Dependencies
 
 [External Secret helm chart](https://charts.external-secrets.io) must be installed and default ClusterSecretStore configured.

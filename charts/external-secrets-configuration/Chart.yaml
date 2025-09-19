@@ -1,4 +1,4 @@
 apiVersion: v2
 name: external-secrets-configuration
 description: A Helm chart for external secrets configuration
-version: 0.0.8
+version: 1.0.0
