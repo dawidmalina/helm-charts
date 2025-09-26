@@ -131,6 +131,11 @@ volumeMounts:
     mountPath: /var/run
   - name: dind-externals
     mountPath: /home/runner/externals
+  {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.dind.volumeMounts }}
+    {{- range $i, $volMount := $.Values.customVolumes.dind.volumeMounts }}
+  - {{ $volMount | toYaml | nindent 4 }}
+    {{- end }}
+  {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -291,6 +296,11 @@ volumeMounts:
     mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
     subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
     {{- end }}
+    {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts }}
+      {{- range $i, $volMount := $.Values.customVolumes.runner.volumeMounts }}
+  - {{ $volMount | toYaml | nindent 4 | trim }}
+      {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -382,6 +392,11 @@ volumeMounts:
     mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
     subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
     {{- end }}
+    {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts }}
+      {{- range $i, $volMount := $.Values.customVolumes.runner.volumeMounts }}
+  - {{ $volMount | toYaml | nindent 4 }}
+      {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -432,7 +447,7 @@ volumeMounts:
     {{- end }}
   {{- end }}
 
-  {{- if or $container.volumeMounts $mountGitHubServerTLS }}
+  {{- if or $container.volumeMounts $mountGitHubServerTLS (and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts) }}
   volumeMounts:
     {{- with $container.volumeMounts }}
       {{- range $i, $volMount := . }}
@@ -446,6 +461,11 @@ volumeMounts:
     - name: github-server-tls-cert
       mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
       subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
+    {{- end }}
+    {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts }}
+      {{- range $i, $volMount := $.Values.customVolumes.runner.volumeMounts }}
+    - {{ $volMount | toYaml | nindent 6 }}
+      {{- end }}
     {{- end }}
   {{- end}}
 {{- end }}

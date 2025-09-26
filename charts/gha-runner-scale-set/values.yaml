@@ -479,3 +479,33 @@ dockerd:
   ## Configures cgroup driver - should match container runtime configuration
   ## cgroupfs is default for most Docker installations, systemd for newer systems
   cgroupDriver: "cgroupfs"
+
+## customVolumes allows adding custom volumes to the runner pods.
+## This is disabled by default and provides no extra configuration to keep existing state.
+## When enabled, you can define custom volumes and volumeMounts for containers.
+## Example:
+# customVolumes:
+#   enabled: true
+#   volumes:
+#     - name: video-ramdisk
+#       emptyDir:
+#         medium: Memory
+#         sizeLimit: "2Gi"
+#   runner:
+#     volumeMounts:
+#       - name: video-ramdisk
+#         mountPath: /workspace/videoramdisk
+#   dind:
+#     volumeMounts:
+#       - name: video-ramdisk
+#         mountPath: /workspace/videoramdisk
+customVolumes:
+  enabled: false
+  ## List of custom volumes to add to the pod
+  volumes: []
+  ## Custom volume mounts for the runner container
+  runner:
+    volumeMounts: []
+  ## Custom volume mounts for the dind container (when using dind mode)
+  dind:
+    volumeMounts: []
