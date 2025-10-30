@@ -1,5 +1,5 @@
 ---
-{{- if .Values.podDisruptionBudget.enabled }}
+{{- if and .Values.podDisruptionBudget.enabled (gt (.Values.replicaCount | int) 2) }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
