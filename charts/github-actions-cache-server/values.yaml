@@ -66,3 +66,25 @@ dnsConfig:
       value: "2"     # Faster timeout for failed queries
     - name: attempts
       value: "2"     # Limit retry attempts
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 6
+  timeoutSeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 6
+  timeoutSeconds: 3
+  periodSeconds: 3
+  failureThreshold: 5
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
