@@ -514,6 +514,9 @@ dockerd:
 ## NOTE: The recommended approach is to specify env variables directly in 
 ## template.spec.containers[name=dind].env (see example in containerMode section above).
 ## This dindEnv option is provided for backward compatibility and convenience.
+## 
+## Precedence: If the same environment variable is defined in both places,
+## the value from dindEnv will take precedence (as it's processed last).
 ## Example:
 # dindEnv:
 #   - name: CUSTOM_VAR
