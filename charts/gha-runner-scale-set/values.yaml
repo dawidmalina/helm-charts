@@ -498,8 +498,13 @@ dockerd:
 # dindEnv:
 #   - name: CUSTOM_VAR
 #     value: "custom-value"
-#   - name: ANOTHER_VAR
-#     value: "another-value"
+#   - name: HTTP_PROXY
+#     value: "http://proxy.example.com:8080"
+#   - name: MY_SECRET
+#     valueFrom:
+#       secretKeyRef:
+#         name: my-secret
+#         key: password
 dindEnv: []
 
 ## customVolumes allows adding custom volumes to the runner pods.

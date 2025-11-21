@@ -119,7 +119,7 @@ env:
     value: "123"
 {{- if $.Values.dindEnv }}
   {{- range $i, $env := $.Values.dindEnv }}
-  - {{ $env | toYaml | nindent 4 }}
+  - {{ $env | toYaml | nindent 4 | trim }}
   {{- end }}
 {{- end }}
 securityContext:
