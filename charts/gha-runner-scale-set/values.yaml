@@ -487,6 +487,10 @@ dockerd:
   ## When set, adds --insecure-registry flag to dockerd
   ## Example: "host.docker.internal:5000"
   # insecureRegistry: ""
+  ## Optional Docker client options to be set via DOCKER_OPTS environment variable
+  ## When set, adds DOCKER_OPTS environment variable to the runner container in dind mode
+  ## Example: "--mtu=1450 --log-level=debug"
+  # opts: ""
 
 ## customVolumes allows adding custom volumes to the runner pods.
 ## This is disabled by default and provides no extra configuration to keep existing state.
