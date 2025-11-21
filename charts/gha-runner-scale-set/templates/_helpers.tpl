@@ -221,6 +221,7 @@ volumeMounts:
       {{- end }}
     {{- end }}
     {{- $setDockerHost := 1 }}
+    {{- $setDockerOpts := 1 }}
     {{- $setRunnerWaitDocker := 1 }}
     {{- $setNodeExtraCaCerts := 0 }}
     {{- $setRunnerUpdateCaCerts := 0 }}
@@ -233,6 +234,9 @@ env:
       {{- range $i, $env := . }}
         {{- if eq $env.name "DOCKER_HOST" }}
           {{- $setDockerHost = 0 }}
+        {{- end }}
+        {{- if eq $env.name "DOCKER_OPTS" }}
+          {{- $setDockerOpts = 0 }}
         {{- end }}
         {{- if eq $env.name "RUNNER_WAIT_FOR_DOCKER_IN_SECONDS" }}
           {{- $setRunnerWaitDocker = 0 }}
@@ -249,6 +253,10 @@ env:
     {{- if $setDockerHost }}
   - name: DOCKER_HOST
     value: unix:///var/run/docker.sock
+    {{- end }}
+    {{- if and $setDockerOpts $.Values.dockerd.dockerOpts }}
+  - name: DOCKER_OPTS
+    value: {{ $.Values.dockerd.dockerOpts | quote }}
     {{- end }}
     {{- if $setRunnerWaitDocker }}
   - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS

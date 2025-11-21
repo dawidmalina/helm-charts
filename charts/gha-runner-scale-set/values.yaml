@@ -479,6 +479,9 @@ dockerd:
   ## Configures cgroup driver - should match container runtime configuration
   ## cgroupfs is default for most Docker installations, systemd for newer systems
   cgroupDriver: "cgroupfs"
+  ## Additional Docker options for the runner container (disabled by default)
+  ## Example: "--add-host=example.com:127.0.0.1"
+  # dockerOpts: ""
 
 ## customVolumes allows adding custom volumes to the runner pods.
 ## This is disabled by default and provides no extra configuration to keep existing state.
