@@ -125,6 +125,23 @@ githubConfigSecret:
 #       requests:
 #         storage: 1Gi
 #
+## To add custom environment variables to the dind container, you can specify them
+## in the template.spec.containers section (recommended approach):
+# template:
+#   spec:
+#     containers:
+#       - name: dind
+#         env:
+#           - name: HTTP_PROXY
+#             value: "http://proxy.example.com:8080"
+#           - name: MY_SECRET
+#             valueFrom:
+#               secretKeyRef:
+#                 name: my-secret
+#                 key: password
+#       - name: runner
+#         image: ghcr.io/actions/actions-runner:latest
+#
 
 ## listenerTemplate is the PodSpec for each listener Pod
 ## For reference: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec
