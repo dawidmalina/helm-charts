@@ -492,6 +492,16 @@ dockerd:
   ## Example: "--mtu=1450 --log-level=debug"
   # opts: ""
 
+## dindEnv allows adding custom environment variables to the dind container
+## This is only applicable when using containerMode.type=dind
+## Example:
+# dindEnv:
+#   - name: CUSTOM_VAR
+#     value: "custom-value"
+#   - name: ANOTHER_VAR
+#     value: "another-value"
+dindEnv: []
+
 ## customVolumes allows adding custom volumes to the runner pods.
 ## This is disabled by default and provides no extra configuration to keep existing state.
 ## When enabled, you can define custom volumes and volumeMounts for containers.

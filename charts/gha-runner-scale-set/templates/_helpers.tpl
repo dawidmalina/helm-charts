@@ -117,6 +117,11 @@ args:
 env:
   - name: DOCKER_GROUP_GID
     value: "123"
+{{- if $.Values.dindEnv }}
+  {{- range $i, $env := $.Values.dindEnv }}
+  - {{ $env | toYaml | nindent 4 }}
+  {{- end }}
+{{- end }}
 securityContext:
   privileged: true
 {{- if (ge ($.Capabilities.KubeVersion.Minor | int) 29) }}
