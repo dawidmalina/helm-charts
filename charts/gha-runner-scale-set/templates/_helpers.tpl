@@ -117,6 +117,11 @@ args:
 env:
   - name: DOCKER_GROUP_GID
     value: "123"
+{{- with $val.env }}
+  {{- range $i, $env := . }}
+  - {{ $env | toYaml | nindent 4 | trim }}
+  {{- end }}
+{{- end }}
 {{- if $.Values.dindEnv }}
   {{- range $i, $env := $.Values.dindEnv }}
   - {{ $env | toYaml | nindent 4 | trim }}
