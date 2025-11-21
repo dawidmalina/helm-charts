@@ -122,11 +122,6 @@ env:
   - {{ $env | toYaml | nindent 4 | trim }}
   {{- end }}
 {{- end }}
-{{- if $.Values.dindEnv }}
-  {{- range $i, $env := $.Values.dindEnv }}
-  - {{ $env | toYaml | nindent 4 | trim }}
-  {{- end }}
-{{- end }}
 securityContext:
   privileged: true
 {{- if (ge ($.Capabilities.KubeVersion.Minor | int) 29) }}
