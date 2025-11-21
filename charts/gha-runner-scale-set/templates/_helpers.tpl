@@ -108,6 +108,12 @@ args:
   - --max-concurrent-uploads={{ $.Values.dockerd.maxConcurrentUploads | default 2 }}
   - --userland-proxy={{ $.Values.dockerd.userlandProxy | default false }}
   - --exec-opt=native.cgroupdriver={{ $.Values.dockerd.cgroupDriver | default "cgroupfs" }}
+{{- if $.Values.dockerd.registryMirror }}
+  - --registry-mirror={{ $.Values.dockerd.registryMirror }}
+{{- end }}
+{{- if $.Values.dockerd.insecureRegistry }}
+  - --insecure-registry={{ $.Values.dockerd.insecureRegistry }}
+{{- end }}
 env:
   - name: DOCKER_GROUP_GID
     value: "123"

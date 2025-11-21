@@ -479,6 +479,14 @@ dockerd:
   ## Configures cgroup driver - should match container runtime configuration
   ## cgroupfs is default for most Docker installations, systemd for newer systems
   cgroupDriver: "cgroupfs"
+  ## Optional registry mirror configuration for Docker daemon
+  ## When set, adds --registry-mirror flag to dockerd
+  ## Example: "http://host.docker.internal:5000"
+  # registryMirror: ""
+  ## Optional insecure registry configuration for Docker daemon
+  ## When set, adds --insecure-registry flag to dockerd
+  ## Example: "host.docker.internal:5000"
+  # insecureRegistry: ""
 
 ## customVolumes allows adding custom volumes to the runner pods.
 ## This is disabled by default and provides no extra configuration to keep existing state.
