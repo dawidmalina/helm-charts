@@ -265,7 +265,7 @@ env:
     {{- end }}
     {{- if $setDockerOpts }}
   - name: DOCKER_OPTS
-    value: {{ $.Values.dockerd.opts }}
+    value: {{ $.Values.dockerd.opts | quote }}
     {{- end }}
     {{- if $setRunnerWaitDocker }}
   - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
