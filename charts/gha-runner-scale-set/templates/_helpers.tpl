@@ -135,36 +135,36 @@ startupProbe:
   failureThreshold: 24
   periodSeconds: 5
 {{- end }}
-    {{- $mountWork := 1 }}
-    {{- $mountDindSock := 1 }}
-    {{- $mountDindExternals := 1 }}
+{{- $mountWork := 1 }}
+{{- $mountDindSock := 1 }}
+{{- $mountDindExternals := 1 }}
 volumeMounts:
-    {{- with $val.volumeMounts }}
-      {{- range $i, $volMount := . }}
-        {{- if eq $volMount.name "work" }}
-          {{- $mountWork = 0 }}
-        {{- end }}
-        {{- if eq $volMount.name "dind-sock" }}
-          {{- $mountDindSock = 0 }}
-        {{- end }}
-        {{- if eq $volMount.name "dind-externals" }}
-          {{- $mountDindExternals = 0 }}
-        {{- end }}
-  - {{ $volMount | toYaml | nindent 4 | trim }}
+  {{- with $val.volumeMounts }}
+    {{- range $i, $volMount := . }}
+      {{- if eq $volMount.name "work" }}
+        {{- $mountWork = 0 }}
       {{- end }}
+      {{- if eq $volMount.name "dind-sock" }}
+        {{- $mountDindSock = 0 }}
+      {{- end }}
+      {{- if eq $volMount.name "dind-externals" }}
+        {{- $mountDindExternals = 0 }}
+      {{- end }}
+  - {{ $volMount | toYaml | nindent 4 | trim }}
     {{- end }}
-    {{- if $mountWork }}
+  {{- end }}
+  {{- if $mountWork }}
   - name: work
     mountPath: /home/runner/_work
-    {{- end }}
-    {{- if $mountDindSock }}
+  {{- end }}
+  {{- if $mountDindSock }}
   - name: dind-sock
     mountPath: /var/run
-    {{- end }}
-    {{- if $mountDindExternals }}
+  {{- end }}
+  {{- if $mountDindExternals }}
   - name: dind-externals
     mountPath: /home/runner/externals
-    {{- end }}
+  {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
