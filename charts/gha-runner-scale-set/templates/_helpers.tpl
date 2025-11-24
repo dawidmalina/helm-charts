@@ -135,18 +135,36 @@ startupProbe:
   failureThreshold: 24
   periodSeconds: 5
 {{- end }}
+    {{- $mountWork := 1 }}
+    {{- $mountDindSock := 1 }}
+    {{- $mountDindExternals := 1 }}
 volumeMounts:
+    {{- with $val.volumeMounts }}
+      {{- range $i, $volMount := . }}
+        {{- if eq $volMount.name "work" }}
+          {{- $mountWork = 0 }}
+        {{- end }}
+        {{- if eq $volMount.name "dind-sock" }}
+          {{- $mountDindSock = 0 }}
+        {{- end }}
+        {{- if eq $volMount.name "dind-externals" }}
+          {{- $mountDindExternals = 0 }}
+        {{- end }}
+  - {{ $volMount | toYaml | nindent 4 | trim }}
+      {{- end }}
+    {{- end }}
+    {{- if $mountWork }}
   - name: work
     mountPath: /home/runner/_work
+    {{- end }}
+    {{- if $mountDindSock }}
   - name: dind-sock
     mountPath: /var/run
+    {{- end }}
+    {{- if $mountDindExternals }}
   - name: dind-externals
     mountPath: /home/runner/externals
-  {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.dind.volumeMounts }}
-    {{- range $i, $volMount := $.Values.customVolumes.dind.volumeMounts }}
-  - {{ $volMount | toYaml | nindent 4 }}
     {{- end }}
-  {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -318,11 +336,6 @@ volumeMounts:
     mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
     subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
     {{- end }}
-    {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts }}
-      {{- range $i, $volMount := $.Values.customVolumes.runner.volumeMounts }}
-  - {{ $volMount | toYaml | nindent 4 | trim }}
-      {{- end }}
-    {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -414,11 +427,6 @@ volumeMounts:
     mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
     subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
     {{- end }}
-    {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts }}
-      {{- range $i, $volMount := $.Values.customVolumes.runner.volumeMounts }}
-  - {{ $volMount | toYaml | nindent 4 }}
-      {{- end }}
-    {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -469,7 +477,7 @@ volumeMounts:
     {{- end }}
   {{- end }}
 
-  {{- if or $container.volumeMounts $mountGitHubServerTLS (and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts) }}
+  {{- if or $container.volumeMounts $mountGitHubServerTLS }}
   volumeMounts:
     {{- with $container.volumeMounts }}
       {{- range $i, $volMount := . }}
@@ -483,11 +491,6 @@ volumeMounts:
     - name: github-server-tls-cert
       mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
       subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
-    {{- end }}
-    {{- if and $.Values.customVolumes $.Values.customVolumes.enabled $.Values.customVolumes.runner.volumeMounts }}
-      {{- range $i, $volMount := $.Values.customVolumes.runner.volumeMounts }}
-    - {{ $volMount | toYaml | nindent 6 }}
-      {{- end }}
     {{- end }}
   {{- end}}
 {{- end }}
