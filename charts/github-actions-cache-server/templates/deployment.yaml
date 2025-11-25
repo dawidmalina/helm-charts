@@ -86,12 +86,12 @@ spec:
           {{- end }}
       volumes:
         - name: sqlite
-          {{- if .Values.persistence.enabled }}
+{{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.volumeClaim.name | default "sqlite-claim" }}
-          {{- else }}
+{{- else }}
           emptyDir: {}
-          {{- end }}
+{{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
