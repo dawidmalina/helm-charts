@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Values.persistence.volumeClaim.name | default "volume-claim" }}
+  name: {{ .Values.persistence.volumeClaim.name | default "sqlite-claim" }}
 spec:
   storageClassName: {{ .Values.persistence.volumeClaim.class | default "" }}
   accessModes:
