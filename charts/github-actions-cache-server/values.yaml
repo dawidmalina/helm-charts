@@ -69,7 +69,7 @@ dnsConfig:
 
 livenessProbe:
   httpGet:
-    path: /
+    path: /health
     port: http
   initialDelaySeconds: 6
   timeoutSeconds: 3
@@ -78,7 +78,7 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /
+    path: /health
     port: http
   initialDelaySeconds: 6
   timeoutSeconds: 3
