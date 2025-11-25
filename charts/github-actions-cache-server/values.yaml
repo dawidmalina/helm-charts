@@ -38,13 +38,14 @@ podSecurityContext:
   fsGroup: 10000
   runAsUser: 10000
 
-volumeClaim:
-  name: sqlite-claim
-
-volumes:
-  - name: sqlite
-    persistentVolumeClaim:
-      claimName: sqlite-claim
+persistence:
+  enabled: false
+  # When enabled, a PersistentVolumeClaim will be created
+  # When disabled, an emptyDir volume will be used instead
+  volumeClaim:
+    name: sqlite-claim
+    # class: ""
+    # size: 1Gi
 
 volumeMounts:
   - mountPath: /opt/data
