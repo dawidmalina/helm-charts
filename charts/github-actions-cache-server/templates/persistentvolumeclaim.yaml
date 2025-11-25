@@ -1,12 +1,14 @@
+{{- if .Values.persistence.enabled }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Values.volumeClaim.name | default "volume-claim" }}
+  name: {{ .Values.persistence.volumeClaim.name | default "volume-claim" }}
 spec:
-  storageClassName: {{ .Values.volumeClaim.class | default "" }}
+  storageClassName: {{ .Values.persistence.volumeClaim.class | default "" }}
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.volumeClaim.size | default "1Gi" }}
+      storage: {{ .Values.persistence.volumeClaim.size | default "1Gi" }}
+{{- end }}
