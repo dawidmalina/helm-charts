@@ -116,24 +116,29 @@ spec:
             {{- $filename := include "image-preloader.imageToFilename" $image }}
             echo "Processing image: {{ $image }}"
             
-            # Pull the image
-            if docker pull {{ $image }}; then
-              echo "Successfully pulled {{ $image }}"
-              
-              # Create subdirectory if needed (for images like selenium/standalone-firefox)
-              TARGET_DIR=$(dirname "{{ $.Values.hostPath }}/{{ $filename }}")
-              mkdir -p "$TARGET_DIR"
-              
-              # Save the image to tar file
-              if docker save {{ $image }} -o "{{ $.Values.hostPath }}/{{ $filename }}"; then
-                echo "Successfully saved {{ $image }} to {{ $filename }}"
+            # Check if tar file already exists
+            if [ -f "{{ $.Values.hostPath }}/{{ $filename }}" ]; then
+              echo "Image {{ $image }} already exists as {{ $filename }}, skipping..."
+            else
+              # Pull the image
+              if docker pull {{ $image }}; then
+                echo "Successfully pulled {{ $image }}"
+                
+                # Create subdirectory if needed (for images like selenium/standalone-firefox)
+                TARGET_DIR=$(dirname "{{ $.Values.hostPath }}/{{ $filename }}")
+                mkdir -p "$TARGET_DIR"
+                
+                # Save the image to tar file
+                if docker save {{ $image }} -o "{{ $.Values.hostPath }}/{{ $filename }}"; then
+                  echo "Successfully saved {{ $image }} to {{ $filename }}"
+                else
+                  echo "Error: Failed to save {{ $image }}"
+                  exit 1
+                fi
               else
-                echo "Error: Failed to save {{ $image }}"
+                echo "Error: Failed to pull {{ $image }}"
                 exit 1
               fi
-            else
-              echo "Error: Failed to pull {{ $image }}"
-              exit 1
             fi
             {{- end }}
             
