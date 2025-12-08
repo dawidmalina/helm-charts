@@ -38,8 +38,9 @@ helm install image-preloader ./charts/image-preloader \
 | `resources` | Resource limits and requests | `{}` |
 | `serviceAccount.create` | Create a service account | `true` |
 | `serviceAccount.name` | Service account name | `""` |
-| `enableRestartPolicy` | Enable container restartPolicy (requires Kubernetes 1.28+) | `false` |
 | `updateStrategy` | DaemonSet update strategy | `RollingUpdate` |
+| `dockerd.mtu` | Docker daemon MTU setting | `1450` |
+| `dockerd.groupGid` | Docker group GID | `123` |
 
 ## Example Values
 
@@ -71,13 +72,15 @@ resources:
 
 1. A service account is created for the DaemonSet pods
 2. The DaemonSet runs on all matching nodes based on nodeSelector and tolerations
-3. A Docker-in-Docker sidecar container runs the Docker daemon
-4. An init container waits for Docker to be ready, then for each image in the `images` list:
+3. A Docker-in-Docker (dind) sidecar init container runs the Docker daemon with `restartPolicy: Always`, which keeps it running throughout the pod lifecycle
+4. A preload-images init container waits for Docker to be ready, then for each image in the `images` list:
    - Pulls the image from the registry
    - Saves it as a tar file with a standardized name
    - Stores it in the configured hostPath
-5. Once complete, the init container exits and a minimal pause container keeps the pod running (consumes only 10m CPU / 32Mi memory per node)
-6. Optionally (with `enableRestartPolicy: true` on Kubernetes 1.28+), the sidecar and pause containers exit after init completion, showing pods as "Completed"
+5. Once the preload-images init container completes, the dind sidecar continues running to keep the pod alive
+6. No regular containers are needed as the sidecar init container maintains the pod lifecycle
+
+**Note**: This chart requires Kubernetes 1.29+ for sidecar init container support (`restartPolicy: Always` on init containers).
 
 ## Usage with gha-runner-scale-set
 
@@ -124,21 +127,9 @@ preloadImages:
     - selenium/video.tar
 ```
 
-### Optional: Enable Pod Completion (Kubernetes 1.28+)
+## Requirements
 
-To make pods complete after successful image preloading instead of running indefinitely, enable the `restartPolicy` feature:
-
-```yaml
-enableRestartPolicy: true
-```
-
-This uses Kubernetes 1.28+ per-container `restartPolicy` support ([KEP-3458](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/3458-pod-conditions-for-starting-completition-of-sandbox-containers)). When enabled:
-- The dind and pause containers will have `restartPolicy: Never` set at the container level
-- Containers exit after the init container completes
-- Pods will show as "Completed" instead of "Running"
-- Resource consumption drops to zero after completion
-
-**Note**: This feature requires Kubernetes 1.28+ (alpha) or 1.29+ (beta). Ensure your cluster supports this feature before enabling.
+- Kubernetes 1.29+ (for sidecar init container support)
 
 ## Notes
 
