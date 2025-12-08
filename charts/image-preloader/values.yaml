@@ -64,10 +64,14 @@ resources: {}
   #   memory: 1Gi
 
 # Service account name
-# If not set, a service account will not be created
 serviceAccount:
-  create: false
+  create: true
   name: ""
+
+# Enable container restartPolicy for pods to complete after init container finishes
+# Requires Kubernetes 1.28+ for per-container restartPolicy support
+# When enabled, dind and pause containers will exit after init container completes
+enableRestartPolicy: false
 
 # Update strategy for the DaemonSet
 updateStrategy:
