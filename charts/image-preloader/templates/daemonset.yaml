@@ -93,10 +93,17 @@ spec:
             set -e
             echo "Waiting for Docker daemon to be ready..."
             
-            # Wait for Docker daemon to be ready
+            # Wait for Docker daemon to be ready (max 2 minutes)
+            MAX_WAIT=120
+            WAITED=0
             while ! docker info >/dev/null 2>&1; do
-              echo "Waiting for Docker daemon..."
+              if [ $WAITED -ge $MAX_WAIT ]; then
+                echo "Error: Docker daemon did not become ready within ${MAX_WAIT} seconds"
+                exit 1
+              fi
+              echo "Waiting for Docker daemon... ($WAITED/$MAX_WAIT seconds)"
               sleep 2
+              WAITED=$((WAITED + 2))
             done
             
             echo "Docker daemon is ready"
