@@ -53,6 +53,8 @@ securityContext:
 # Docker daemon configuration
 dockerd:
   mtu: 1450
+  # Docker group GID - used by dockerd to set the group ownership of the Docker socket
+  # Default: 123 (arbitrary GID that should not conflict with existing system groups)
   groupGid: 123
   # Resources for the dind sidecar container
   resources:

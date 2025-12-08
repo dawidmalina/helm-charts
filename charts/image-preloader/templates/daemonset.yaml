@@ -75,7 +75,7 @@ spec:
           failureThreshold: 24
           periodSeconds: 5
           successThreshold: 1
-          timeoutSeconds: 1
+          timeoutSeconds: 10
         {{- with .Values.dockerd.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
@@ -132,6 +132,8 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+      # No regular containers needed - the dind sidecar init container (with restartPolicy: Always)
+      # keeps the pod running after the preload-images init container completes
       containers: []
       volumes:
       - name: images
