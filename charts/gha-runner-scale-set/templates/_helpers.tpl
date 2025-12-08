@@ -248,8 +248,8 @@ args:
         exit 1
       fi
       echo "Waiting for Docker daemon... (${timeout}s remaining)"
-      sleep 5
       timeout=$((timeout - 5))
+      sleep 5
     done
     echo "Docker daemon is ready"
     echo "Starting Docker image preloading..."
