@@ -132,9 +132,20 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-      # No regular containers needed - the dind sidecar init container (with restartPolicy: Always)
-      # keeps the pod running after the preload-images init container completes
-      containers: []
+      # Minimal placeholder container to satisfy Kubernetes requirements
+      # The dind sidecar init container (with restartPolicy: Always) does the actual work
+      # and keeps the pod running after the preload-images init container completes
+      containers:
+      - name: pause
+        image: gcr.io/google-containers/pause:3.9
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 1m
+            memory: 8Mi
+          limits:
+            cpu: 10m
+            memory: 32Mi
       volumes:
       - name: images
         hostPath:

@@ -79,7 +79,7 @@ resources:
    - Saves it as a tar file with a standardized name
    - Stores it in the configured hostPath
 5. Once the preload-images init container completes, the dind sidecar continues running to keep the pod alive
-6. No regular containers are needed as the sidecar init container maintains the pod lifecycle
+6. A minimal pause container is included to satisfy Kubernetes requirements (which mandates at least one regular container), while the sidecar init container maintains the pod lifecycle
 
 **Note**: This chart requires Kubernetes 1.29+ for sidecar init container support (`restartPolicy: Always` on init containers).
 
