@@ -71,6 +71,6 @@ Example: selenium/standalone-firefox:4.23.1-20240820 -> standalone-firefox_4.23.
 {{- $tag = index $parts 1 }}
 {{- end }}
 {{- $pathParts := splitList "/" $imageNameWithPath }}
-{{- $baseName := index $pathParts (sub (len $pathParts) 1) }}
+{{- $baseName := last $pathParts }}
 {{- printf "%s_%s.tar" $baseName $tag }}
 {{- end }}
