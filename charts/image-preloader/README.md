@@ -74,12 +74,12 @@ resources:
 1. A service account is created for the DaemonSet pods
 2. The DaemonSet runs on all matching nodes based on nodeSelector and tolerations
 3. A Docker-in-Docker (dind) sidecar init container runs the Docker daemon with `restartPolicy: Always`, which keeps it running throughout the pod lifecycle
-4. A preload-images init container waits for Docker to be ready, then for each image in the `images` list:
+4. The preload-images regular container waits for Docker to be ready, then for each image in the `images` list:
    - Pulls the image from the registry
    - Saves it as a tar file with a standardized name
    - Stores it in the configured hostPath
-5. Once the preload-images init container completes, the dind sidecar continues running to keep the pod alive
-6. A minimal pause container is included to satisfy Kubernetes requirements (which mandates at least one regular container), while the sidecar init container maintains the pod lifecycle
+5. After completing the preload, the preload-images container sleeps indefinitely to keep the pod running
+6. The dind sidecar init container continues providing Docker daemon services throughout the pod lifecycle
 
 **Note**: This chart requires Kubernetes 1.29+ for sidecar init container support (`restartPolicy: Always` on init containers).
 
