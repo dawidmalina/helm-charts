@@ -136,7 +136,7 @@ spec:
       # The dind sidecar init container (with restartPolicy: Always) does the actual work
       # and keeps the pod running after the preload-images init container completes
       containers:
-      - name: pause
+      - name: preload-images
         image: gcr.io/google-containers/pause:3.9
         imagePullPolicy: IfNotPresent
         resources:
