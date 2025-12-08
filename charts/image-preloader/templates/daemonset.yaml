@@ -40,6 +40,46 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
+      - name: dind
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        restartPolicy: Always
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+          - --mtu={{ .Values.dockerd.mtu | default 1450 }}
+          - --max-concurrent-downloads=4
+          - --max-concurrent-uploads=2
+          - --userland-proxy=false
+          - --exec-opt=native.cgroupdriver=cgroupfs
+        env:
+        - name: DOCKER_GROUP_GID
+          value: "{{ .Values.dockerd.groupGid | default 123 }}"
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        volumeMounts:
+        - name: dind-sock
+          mountPath: /var/run
+        - name: docker-graph-storage
+          mountPath: /var/lib/docker
+        startupProbe:
+          exec:
+            command:
+              - docker
+              - info
+          failureThreshold: 24
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 10
+        {{- with .Values.dockerd.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       - name: preload-images
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -48,18 +88,7 @@ spec:
           - -c
           - |
             set -e
-            echo "Waiting for Docker daemon to be ready..."
-            timeout=120
-            while ! docker info >/dev/null 2>&1; do
-              if [ "$timeout" -le 0 ]; then
-                echo "Error: Docker daemon failed to start within timeout"
-                exit 1
-              fi
-              echo "Waiting for Docker daemon... (${timeout}s remaining)"
-              timeout=$((timeout - 5))
-              sleep 5
-            done
-            echo "Docker daemon is ready"
+            echo "Docker daemon is ready (started by dind init container)"
             
             # Create target directory structure if it doesn't exist
             mkdir -p {{ .Values.hostPath }}
@@ -103,48 +132,9 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-      containers:
-      - name: dind
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- with .Values.securityContext }}
-        securityContext:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- if .Values.enableRestartPolicy }}
-        restartPolicy: Never
-        {{- end }}
-        args:
-          - dockerd
-          - --host=unix:///var/run/docker.sock
-          - --mtu={{ .Values.dockerd.mtu | default 1450 }}
-        env:
-        - name: DOCKER_TLS_CERTDIR
-          value: ""
-        volumeMounts:
-        - name: dind-sock
-          mountPath: /var/run
-        - name: docker-graph-storage
-          mountPath: /var/lib/docker
-        resources:
-          limits:
-            cpu: 500m
-            memory: 1Gi
-          requests:
-            cpu: 100m
-            memory: 256Mi
-      - name: pause
-        image: gcr.io/google_containers/pause:3.2
-        {{- if .Values.enableRestartPolicy }}
-        restartPolicy: Never
-        {{- end }}
-        resources:
-          limits:
-            cpu: 10m
-            memory: 32Mi
-          requests:
-            cpu: 10m
-            memory: 32Mi
+      # No regular containers needed - the dind sidecar init container (with restartPolicy: Always)
+      # keeps the pod running after the preload-images init container completes
+      containers: []
       volumes:
       - name: images
         hostPath:
