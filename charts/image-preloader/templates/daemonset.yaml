@@ -80,6 +80,9 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+      # The preload-images container runs the image preloading logic
+      # The dind sidecar init container (with restartPolicy: Always) provides Docker daemon
+      containers:
       - name: preload-images
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -88,7 +91,22 @@ spec:
           - -c
           - |
             set -e
-            echo "Docker daemon is ready (started by dind init container)"
+            echo "Waiting for Docker daemon to be ready..."
+            
+            # Wait for Docker daemon to be ready (max 2 minutes)
+            MAX_WAIT=120
+            WAITED=0
+            while ! docker info >/dev/null 2>&1; do
+              if [ $WAITED -ge $MAX_WAIT ]; then
+                echo "Error: Docker daemon did not become ready within ${MAX_WAIT} seconds"
+                exit 1
+              fi
+              echo "Waiting for Docker daemon... ($WAITED/$MAX_WAIT seconds)"
+              sleep 2
+              WAITED=$((WAITED + 2))
+            done
+            
+            echo "Docker daemon is ready"
             
             # Create target directory structure if it doesn't exist
             mkdir -p {{ .Values.hostPath }}
@@ -120,6 +138,10 @@ spec:
             {{- end }}
             
             echo "Docker image preloading completed successfully"
+            
+            # Keep the container running to maintain the pod
+            echo "Preloading complete. Keeping container alive..."
+            sleep infinity
         env:
         - name: DOCKER_HOST
           value: unix:///var/run/docker.sock
@@ -132,9 +154,6 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-      # No regular containers needed - the dind sidecar init container (with restartPolicy: Always)
-      # keeps the pod running after the preload-images init container completes
-      containers: []
       volumes:
       - name: images
         hostPath:

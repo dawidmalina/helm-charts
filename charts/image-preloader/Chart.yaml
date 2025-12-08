@@ -2,5 +2,5 @@ apiVersion: v2
 name: image-preloader
 description: A Helm chart for preloading Docker images to nodes using DaemonSet
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "1.0.0"
