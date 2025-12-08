@@ -12,8 +12,9 @@ The image preloader chart helps optimize container startup times by pre-caching 
 - **Node selection**: Supports nodeSelector for targeting specific nodes
 - **Tolerations**: Configurable tolerations for scheduling on tainted nodes
 - **Automatic tar naming**: Converts image names to standardized tar filenames
+  - Preserves `<user>/<image_name>` format (last two path components)
   - Example: `selenium/standalone-firefox:4.23.1-20240820` → `selenium/standalone-firefox_4.23.1-20240820.tar`
-  - Registry hostnames are stripped from the filename
+  - Example: `harbor.example.com/hub/selenium/standalone-firefox:4.23.1-20240820` → `selenium/standalone-firefox_4.23.1-20240820.tar`
 
 ## Installation
 
