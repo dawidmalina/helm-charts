@@ -598,6 +598,16 @@ entries:
   image-preloader:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-12-08T14:07:24.650331507Z"
+    description: A Helm chart for preloading Docker images to nodes using DaemonSet
+    digest: 1952e0c25f2e82fd674bcf0f3c16de39ac557ea8ac3af0804d6bfdcee741d329
+    name: image-preloader
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/image-preloader-0.2.0/image-preloader-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-12-08T13:35:33.550907399Z"
     description: A Helm chart for preloading Docker images to nodes using DaemonSet
     digest: 29682cde596b176d0fc0b609ccf598a8e279b3a8b43192ac7f54e42bd4ff6603
@@ -1621,4 +1631,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
     version: 0.1.0
-generated: "2025-12-08T13:35:33.551129562Z"
+generated: "2025-12-08T14:07:24.650634845Z"
