@@ -41,6 +41,7 @@ helm install image-preloader ./charts/image-preloader \
 | `updateStrategy` | DaemonSet update strategy | `RollingUpdate` |
 | `dockerd.mtu` | Docker daemon MTU setting | `1450` |
 | `dockerd.groupGid` | Docker group GID | `123` |
+| `dockerd.resources` | Resource limits and requests for dind sidecar | `{"limits": {"cpu": "500m", "memory": "1Gi"}, "requests": {"cpu": "100m", "memory": "256Mi"}}` |
 
 ## Example Values
 
@@ -130,6 +131,9 @@ preloadImages:
 ## Requirements
 
 - Kubernetes 1.29+ (for sidecar init container support)
+  - Sidecar init containers became beta in Kubernetes 1.29 (enabled by default)
+  - Became stable (GA) in Kubernetes 1.30
+  - For Kubernetes 1.29, ensure the `SidecarContainers` feature gate is enabled (it should be enabled by default in beta)
 
 ## Notes
 

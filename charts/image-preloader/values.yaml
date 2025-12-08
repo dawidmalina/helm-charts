@@ -54,6 +54,14 @@ securityContext:
 dockerd:
   mtu: 1450
   groupGid: 123
+  # Resources for the dind sidecar container
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
 
 # Resources for the preloader container
 resources: {}
