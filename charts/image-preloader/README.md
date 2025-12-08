@@ -132,10 +132,13 @@ To make pods complete after successful image preloading instead of running indef
 enableRestartPolicy: true
 ```
 
-This requires Kubernetes 1.28+ for per-container `restartPolicy` support. When enabled:
-- The dind and pause containers will exit after the init container completes
+This uses Kubernetes 1.28+ per-container `restartPolicy` support ([KEP-3458](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/3458-pod-conditions-for-starting-completition-of-sandbox-containers)). When enabled:
+- The dind and pause containers will have `restartPolicy: Never` set at the container level
+- Containers exit after the init container completes
 - Pods will show as "Completed" instead of "Running"
 - Resource consumption drops to zero after completion
+
+**Note**: This feature requires Kubernetes 1.28+ (alpha) or 1.29+ (beta). Ensure your cluster supports this feature before enabling.
 
 ## Notes
 
