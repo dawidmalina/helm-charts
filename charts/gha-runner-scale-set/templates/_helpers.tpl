@@ -240,6 +240,18 @@ args:
   - -c
   - |
     set -e
+    echo "Waiting for Docker daemon to be ready..."
+    timeout=120
+    while ! docker info >/dev/null 2>&1; do
+      if [ "$timeout" -le 0 ]; then
+        echo "Error: Docker daemon failed to start within timeout"
+        exit 1
+      fi
+      echo "Waiting for Docker daemon... (${timeout}s remaining)"
+      sleep 5
+      timeout=$((timeout - 5))
+    done
+    echo "Docker daemon is ready"
     echo "Starting Docker image preloading..."
     {{- range $file := $.Values.preloadImages.imageTarFiles }}
     if [ -f "/runner-images/{{ $file }}" ]; then
