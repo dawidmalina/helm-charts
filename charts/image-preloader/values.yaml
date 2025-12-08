@@ -1,0 +1,72 @@
+# Default values for image-preloader.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Docker-in-Docker image configuration
+image:
+  repository: docker
+  tag: 27-dind
+  pullPolicy: IfNotPresent
+
+# List of Docker images to preload
+# Each image will be pulled and saved as a tar file on the host
+# Example:
+# images:
+#   - selenium/standalone-firefox:4.23.1-20240820
+#   - selenium/video:ffmpeg-4.3.1-20230404
+images: []
+
+# Host path where Docker image tar files will be saved
+# Default: /opt/runner/images
+hostPath: /opt/runner/images
+
+# Node selector for scheduling the DaemonSet pods
+# Example:
+# nodeSelector:
+#   kubernetes.io/os: linux
+nodeSelector: {}
+
+# Tolerations for scheduling the DaemonSet pods
+# Example:
+# tolerations:
+#   - key: "node-role.kubernetes.io/control-plane"
+#     operator: "Exists"
+#     effect: "NoSchedule"
+tolerations: []
+
+# Additional labels to add to the DaemonSet pods
+podLabels: {}
+
+# Additional annotations to add to the DaemonSet pods
+podAnnotations: {}
+
+# Security context for the pod
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+  fsGroup: 0
+
+# Security context for the container
+securityContext:
+  privileged: true
+
+# Resources for the preloader container
+resources: {}
+  # limits:
+  #   cpu: 1000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 500m
+  #   memory: 1Gi
+
+# Service account name
+# If not set, a service account will not be created
+serviceAccount:
+  create: false
+  name: ""
+
+# Update strategy for the DaemonSet
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1

@@ -1,0 +1,136 @@
+{{- if gt (len .Values.images) 0 }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "image-preloader.fullname" . }}
+  labels:
+    {{- include "image-preloader.labels" . | nindent 4 }}
+spec:
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "image-preloader.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ .Values.images | toJson | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "image-preloader.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "image-preloader.serviceAccountName" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      - name: preload-images
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            set -e
+            echo "Starting Docker daemon..."
+            dockerd-entrypoint.sh &
+            DOCKER_PID=$!
+            
+            echo "Waiting for Docker daemon to be ready..."
+            timeout=120
+            while ! docker info >/dev/null 2>&1; do
+              if [ "$timeout" -le 0 ]; then
+                echo "Error: Docker daemon failed to start within timeout"
+                exit 1
+              fi
+              echo "Waiting for Docker daemon... (${timeout}s remaining)"
+              timeout=$((timeout - 5))
+              sleep 5
+            done
+            echo "Docker daemon is ready"
+            
+            # Create target directory structure if it doesn't exist
+            mkdir -p {{ .Values.hostPath }}
+            
+            echo "Starting Docker image preloading..."
+            {{- range $image := .Values.images }}
+            {{- $filename := include "image-preloader.imageToFilename" $image }}
+            echo "Processing image: {{ $image }}"
+            
+            # Pull the image
+            if docker pull {{ $image }}; then
+              echo "Successfully pulled {{ $image }}"
+              
+              # Create subdirectory if needed (for images like selenium/standalone-firefox)
+              TARGET_DIR=$(dirname "{{ $.Values.hostPath }}/{{ $filename }}")
+              mkdir -p "$TARGET_DIR"
+              
+              # Save the image to tar file
+              if docker save {{ $image }} -o "{{ $.Values.hostPath }}/{{ $filename }}"; then
+                echo "Successfully saved {{ $image }} to {{ $filename }}"
+              else
+                echo "Error: Failed to save {{ $image }}"
+                exit 1
+              fi
+            else
+              echo "Error: Failed to pull {{ $image }}"
+              exit 1
+            fi
+            {{- end }}
+            
+            echo "Docker image preloading completed successfully"
+            
+            # Stop Docker daemon gracefully
+            echo "Stopping Docker daemon..."
+            kill $DOCKER_PID
+            wait $DOCKER_PID 2>/dev/null || true
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        volumeMounts:
+        - name: images
+          mountPath: {{ .Values.hostPath }}
+        - name: docker-graph-storage
+          mountPath: /var/lib/docker
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      containers:
+      - name: pause
+        image: gcr.io/google_containers/pause:3.2
+        resources:
+          limits:
+            cpu: 10m
+            memory: 32Mi
+          requests:
+            cpu: 10m
+            memory: 32Mi
+      volumes:
+      - name: images
+        hostPath:
+          path: {{ .Values.hostPath }}
+          type: DirectoryOrCreate
+      - name: docker-graph-storage
+        emptyDir: {}
+{{- end }}
