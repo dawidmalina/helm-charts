@@ -215,6 +215,66 @@ volumeMounts:
   {{- end }}
 {{- end }}
 
+{{- define "gha-runner-scale-set.preload-images-volume" -}}
+{{- $createPreloadImagesVolume := 1 }}
+  {{- range $i, $volume := .Values.template.spec.volumes }}
+    {{- if eq $volume.name "runner-images" }}
+      {{- $createPreloadImagesVolume = 0 }}
+- {{ $volume | toYaml | nindent 2 | trim }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $createPreloadImagesVolume 1 }}
+- name: runner-images
+  hostPath:
+    path: {{ .Values.preloadImages.hostPath }}
+    type: DirectoryOrCreate
+  {{- end }}
+{{- end }}
+
+{{- define "gha-runner-scale-set.preload-images-init-container" -}}
+{{- range $i, $val := .Values.template.spec.containers }}
+  {{- if eq $val.name "dind" }}
+image: {{ $val.image }}
+command: ["/bin/sh"]
+args:
+  - -c
+  - |
+    set -e
+    echo "Waiting for Docker daemon to be ready..."
+    timeout=120
+    while ! docker info >/dev/null 2>&1; do
+      if [ "$timeout" -le 0 ]; then
+        echo "Error: Docker daemon failed to start within timeout"
+        exit 1
+      fi
+      echo "Waiting for Docker daemon... (${timeout}s remaining)"
+      timeout=$((timeout - 5))
+      sleep 5
+    done
+    echo "Docker daemon is ready"
+    echo "Starting Docker image preloading..."
+    {{- range $file := $.Values.preloadImages.imageTarFiles }}
+    if [ -f "/runner-images/{{ $file }}" ]; then
+      echo "Loading image from {{ $file }}..."
+      docker load -i "/runner-images/{{ $file }}"
+    else
+      echo "Warning: File /runner-images/{{ $file }} not found, skipping..."
+    fi
+    {{- end }}
+    echo "Docker image preloading completed."
+env:
+  - name: DOCKER_HOST
+    value: unix:///var/run/docker.sock
+volumeMounts:
+  - name: runner-images
+    mountPath: /runner-images
+    readOnly: true
+  - name: dind-sock
+    mountPath: /var/run
+  {{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "gha-runner-scale-set.kubernetes-mode-work-volume" -}}
 {{- $createWorkVolume := 1 }}
   {{- range $i, $volume := .Values.template.spec.volumes }}
@@ -234,7 +294,7 @@ volumeMounts:
 
 {{- define "gha-runner-scale-set.non-work-volumes" -}}
   {{- range $i, $volume := .Values.template.spec.volumes }}
-    {{- if and (ne $volume.name "work") (ne $volume.name "dind-sock") (ne $volume.name "dind-externals") }}
+    {{- if and (ne $volume.name "work") (ne $volume.name "dind-sock") (ne $volume.name "dind-externals") (ne $volume.name "runner-images") }}
 - {{ $volume | toYaml | nindent 2 | trim }}
     {{- end }}
   {{- end }}

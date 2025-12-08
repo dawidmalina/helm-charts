@@ -508,3 +508,26 @@ dockerd:
   ## When set, adds DOCKER_OPTS environment variable to the runner container in dind mode
   ## Example: "--mtu=1450 --log-level=debug"
   # opts: ""
+
+## preloadImages configuration for dind mode
+## Allows preloading Docker images from tar files stored on the host
+## This is useful for speeding up runner startup by preloading commonly used images
+## that don't need to be pulled from a registry every time a runner starts.
+## 
+## To prepare image tar files:
+##   1. docker pull selenium/standalone-firefox:latest
+##   2. docker save selenium/standalone-firefox:latest -o /opt/runner/images/selenium/standalone-firefox.tar
+##   3. Ensure the host path directory exists and is accessible to the runner pods
+preloadImages:
+  ## Enable or disable the image preloading init container
+  enabled: false
+  ## List of Docker image tar files to load from the host path
+  ## Files should be relative paths from the hostPath mount point
+  ## Example:
+  # imageTarFiles:
+  #   - selenium/standalone-firefox.tar
+  #   - selenium/video.tar
+  imageTarFiles: []
+  ## Host path where Docker image tar files are stored
+  ## Default: /opt/runner/images
+  hostPath: /opt/runner/images
