@@ -87,7 +87,7 @@ app.kubernetes.io/instance: {{ include "gha-runner-scale-set.scale-set-name" . }
   {{- if eq $val.name "runner" }}
 image: {{ $val.image }}
 command: ["cp"]
-args: ["-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
 volumeMounts:
   - name: dind-externals
     mountPath: /home/runner/tmpDir
@@ -170,10 +170,26 @@ volumeMounts:
 {{- end }}
 
 {{- define "gha-runner-scale-set.dind-volume" -}}
+{{- $createDindSockVolume := 1 }}
+{{- $createDindExternalsVolume := 1 }}
+  {{- range $i, $volume := .Values.template.spec.volumes }}
+    {{- if eq $volume.name "dind-sock" }}
+      {{- $createDindSockVolume = 0 }}
+- {{ $volume | toYaml | nindent 2 | trim }}
+    {{- end }}
+    {{- if eq $volume.name "dind-externals" }}
+      {{- $createDindExternalsVolume = 0 }}
+- {{ $volume | toYaml | nindent 2 | trim }}
+    {{- end }}
+  {{- end }}
+  {{- if eq $createDindSockVolume 1 }}
 - name: dind-sock
   emptyDir: {}
+  {{- end }}
+  {{- if eq $createDindExternalsVolume 1 }}
 - name: dind-externals
   emptyDir: {}
+  {{- end }}
 {{- end }}
 
 {{- define "gha-runner-scale-set.tls-volume" -}}
@@ -218,7 +234,7 @@ volumeMounts:
 
 {{- define "gha-runner-scale-set.non-work-volumes" -}}
   {{- range $i, $volume := .Values.template.spec.volumes }}
-    {{- if ne $volume.name "work" }}
+    {{- if and (ne $volume.name "work") (ne $volume.name "dind-sock") (ne $volume.name "dind-externals") }}
 - {{ $volume | toYaml | nindent 2 | trim }}
     {{- end }}
   {{- end }}
