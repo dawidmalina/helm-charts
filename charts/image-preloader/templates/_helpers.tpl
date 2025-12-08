@@ -63,6 +63,7 @@ Create the name of the service account to use
 Convert image name to tar filename
 Example: selenium/standalone-firefox:4.23.1-20240820 -> selenium/standalone-firefox_4.23.1-20240820.tar
 Example: harbor.example.com/hub/selenium/standalone-firefox:4.23.1-20240820 -> hub/selenium/standalone-firefox_4.23.1-20240820.tar
+Note: Registry hostnames (containing dots) are stripped from the path
 */}}
 {{- define "image-preloader.imageToFilename" -}}
 {{- $parts := splitList ":" . }}
@@ -73,7 +74,7 @@ Example: harbor.example.com/hub/selenium/standalone-firefox:4.23.1-20240820 -> h
 {{- end }}
 {{- $pathParts := splitList "/" $imageNameWithPath }}
 {{- $imagePath := $imageNameWithPath }}
-{{- if contains "." (index $pathParts 0) }}
+{{- if and (gt (len $pathParts) 1) (contains "." (index $pathParts 0)) }}
 {{- $imagePath = join "/" (rest $pathParts) }}
 {{- end }}
 {{- printf "%s_%s.tar" $imagePath $tag }}
