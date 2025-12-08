@@ -69,8 +69,8 @@ resources:
 ## How It Works
 
 1. The DaemonSet runs on all matching nodes based on nodeSelector and tolerations
-2. An init container starts a Docker-in-Docker daemon
-3. For each image in the `images` list:
+2. A Docker-in-Docker sidecar container runs the Docker daemon
+3. An init container waits for Docker to be ready, then for each image in the `images` list:
    - Pulls the image from the registry
    - Saves it as a tar file with a standardized name
    - Stores it in the configured hostPath
@@ -78,7 +78,38 @@ resources:
 
 ## Usage with gha-runner-scale-set
 
-This chart is designed to work with the `gha-runner-scale-set` chart's preloadImages feature. After running this chart to populate the hostPath with tar files, configure the runner scale set to load these images:
+This chart is designed to work with the `gha-runner-scale-set` chart's preloadImages feature. 
+
+### Step 1: Deploy image-preloader to preload images
+
+```bash
+# Create values file for image-preloader
+cat > image-preloader-values.yaml << EOF
+images:
+  - selenium/standalone-firefox:4.23.1-20240820
+  - selenium/video:ffmpeg-4.3.1-20230404
+
+hostPath: /opt/runner/images
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+EOF
+
+# Install the chart
+helm install image-preloader ./charts/image-preloader -f image-preloader-values.yaml
+```
+
+### Step 2: Configure gha-runner-scale-set to use preloaded images
+
+After running this chart to populate the hostPath with tar files, configure the runner scale set to load these images:
 
 ```yaml
 # gha-runner-scale-set values.yaml

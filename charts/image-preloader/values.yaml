@@ -50,6 +50,10 @@ podSecurityContext:
 securityContext:
   privileged: true
 
+# Docker daemon configuration
+dockerd:
+  mtu: 1450
+
 # Resources for the preloader container
 resources: {}
   # limits:

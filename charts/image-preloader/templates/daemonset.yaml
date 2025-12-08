@@ -43,19 +43,11 @@ spec:
       - name: preload-images
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- with .Values.securityContext }}
-        securityContext:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
         command: ["/bin/sh"]
         args:
           - -c
           - |
             set -e
-            echo "Starting Docker daemon..."
-            dockerd-entrypoint.sh &
-            DOCKER_PID=$!
-            
             echo "Waiting for Docker daemon to be ready..."
             timeout=120
             while ! docker info >/dev/null 2>&1; do
@@ -99,24 +91,45 @@ spec:
             {{- end }}
             
             echo "Docker image preloading completed successfully"
-            
-            # Stop Docker daemon gracefully
-            echo "Stopping Docker daemon..."
-            kill $DOCKER_PID
-            wait $DOCKER_PID 2>/dev/null || true
         env:
-        - name: DOCKER_TLS_CERTDIR
-          value: ""
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker.sock
         volumeMounts:
         - name: images
           mountPath: {{ .Values.hostPath }}
-        - name: docker-graph-storage
-          mountPath: /var/lib/docker
+        - name: dind-sock
+          mountPath: /var/run
         {{- with .Values.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
       containers:
+      - name: dind
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --mtu={{ .Values.dockerd.mtu | default 1450 }}
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        volumeMounts:
+        - name: dind-sock
+          mountPath: /var/run
+        - name: docker-graph-storage
+          mountPath: /var/lib/docker
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
       - name: pause
         image: gcr.io/google_containers/pause:3.2
         resources:
@@ -131,6 +144,8 @@ spec:
         hostPath:
           path: {{ .Values.hostPath }}
           type: DirectoryOrCreate
+      - name: dind-sock
+        emptyDir: {}
       - name: docker-graph-storage
         emptyDir: {}
 {{- end }}
