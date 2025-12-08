@@ -12,7 +12,7 @@ The image preloader chart helps optimize container startup times by pre-caching 
 - **Node selection**: Supports nodeSelector for targeting specific nodes
 - **Tolerations**: Configurable tolerations for scheduling on tainted nodes
 - **Automatic tar naming**: Converts image names to standardized tar filenames
-  - Example: `selenium/standalone-firefox:4.23.1-20240820` → `selenium/standalone-firefox.tar`
+  - Example: `selenium/standalone-firefox:4.23.1-20240820` → `standalone-firefox_4.23.1-20240820.tar`
 
 ## Installation
 
@@ -124,8 +124,8 @@ preloadImages:
   enabled: true
   hostPath: /opt/runner/images
   imageTarFiles:
-    - selenium/standalone-firefox.tar
-    - selenium/video.tar
+    - standalone-firefox_4.23.1-20240820.tar
+    - video_ffmpeg-4.3.1-20230404.tar
 ```
 
 ## Requirements
