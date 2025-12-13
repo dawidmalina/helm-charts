@@ -5,7 +5,7 @@
 # Docker-in-Docker image configuration
 image:
   repository: docker
-  tag: 27-dind
+  tag: 29-dind
   pullPolicy: IfNotPresent
 
 # List of Docker images to preload
