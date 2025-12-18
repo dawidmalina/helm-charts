@@ -131,9 +131,10 @@ startupProbe:
     command:
       - docker
       - info
-  initialDelaySeconds: 0
-  failureThreshold: 24
+  initialDelaySeconds: 10
   periodSeconds: 5
+  timeoutSeconds: 5
+  failureThreshold: 60
 {{- end }}
 {{- $mountWork := 1 }}
 {{- $mountDindSock := 1 }}
