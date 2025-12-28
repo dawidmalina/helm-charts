@@ -35,6 +35,22 @@ entries:
     version: 0.0.6
   gha-runner-scale-set:
   - apiVersion: v2
+    appVersion: 0.13.1
+    created: "2025-12-28T23:55:22.803316475Z"
+    description: A Helm chart for deploying an AutoScalingRunnerSet
+    digest: 58a7ee50f5c069f1d2dd6cf246f7b8f2c13c9d7f69364397c2a60ce157358968
+    home: https://github.com/actions/actions-runner-controller
+    maintainers:
+    - name: actions
+      url: https://github.com/actions
+    name: gha-runner-scale-set
+    sources:
+    - https://github.com/actions/actions-runner-controller
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/gha-runner-scale-set-0.15.4/gha-runner-scale-set-0.15.4.tgz
+    version: 0.15.4
+  - apiVersion: v2
     appVersion: 0.13.0
     created: "2025-12-18T10:40:50.548877493Z"
     description: A Helm chart for deploying an AutoScalingRunnerSet
@@ -1726,4 +1742,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
     version: 0.1.0
-generated: "2025-12-22T08:47:24.268193289Z"
+generated: "2025-12-28T23:55:22.803702591Z"
