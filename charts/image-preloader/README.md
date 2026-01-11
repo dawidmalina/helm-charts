@@ -11,6 +11,7 @@ The image preloader chart helps optimize container startup times by pre-caching 
 - **DaemonSet deployment**: Ensures images are preloaded on all matching nodes
 - **Node selection**: Supports nodeSelector for targeting specific nodes
 - **Tolerations**: Configurable tolerations for scheduling on tainted nodes
+- **Age-based refresh**: Automatically rebuilds image tar files older than the configured age (default: 7 days)
 - **Automatic tar naming**: Converts image names to standardized tar filenames
   - Preserves `<user>/<image_name>` format (last two path components)
   - Example: `selenium/standalone-firefox:4.23.1-20240820` → `selenium/standalone-firefox_4.23.1-20240820.tar`
@@ -33,6 +34,7 @@ helm install image-preloader ./charts/image-preloader \
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `images` | List of Docker images to preload | `[]` |
 | `hostPath` | Host path where tar files will be saved | `/opt/runner/images` |
+| `maxImageAge` | Maximum age (in days) for cached image tar files. If older, rebuild. Set to 0 to always rebuild, or negative to disable age check | `7` |
 | `nodeSelector` | Node selector for pod scheduling | `{}` |
 | `tolerations` | Tolerations for pod scheduling | `[]` |
 | `podLabels` | Additional labels for pods | `{}` |
@@ -53,6 +55,9 @@ images:
   - selenium/video:ffmpeg-4.3.1-20230404
 
 hostPath: /opt/runner/images
+
+# Rebuild image tar files older than 14 days
+maxImageAge: 14
 
 nodeSelector:
   kubernetes.io/os: linux
@@ -77,11 +82,22 @@ resources:
 2. The DaemonSet runs on all matching nodes based on nodeSelector and tolerations
 3. A Docker-in-Docker (dind) sidecar init container runs the Docker daemon with `restartPolicy: Always`, which keeps it running throughout the pod lifecycle
 4. The preload-images regular container waits for Docker to be ready, then for each image in the `images` list:
-   - Pulls the image from the registry
-   - Saves it as a tar file with a standardized name
+   - Checks if a tar file already exists for the image
+   - If the file exists, checks its age (modification time)
+   - If the file is older than `maxImageAge` days (default: 7), pulls the image and rebuilds the tar file
+   - If the file is within the age limit, skips pulling
+   - If the file doesn't exist, pulls the image and saves it as a tar file
    - Stores it in the configured hostPath
 5. After completing the preload, the preload-images container sleeps indefinitely to keep the pod running
 6. The dind sidecar init container continues providing Docker daemon services throughout the pod lifecycle
+
+### Age-Based Refresh Configuration
+
+The `maxImageAge` parameter controls when tar files are rebuilt:
+- **Default (7)**: Rebuilds tar files older than 7 days
+- **0**: Always rebuilds tar files, even if they exist
+- **Negative value (e.g., -1)**: Disables age check, never rebuilds if file exists (original behavior)
+- **Custom value**: Rebuilds tar files older than specified number of days
 
 **Note**: This chart requires Kubernetes 1.29+ for sidecar init container support (`restartPolicy: Always` on init containers).
 
@@ -142,3 +158,4 @@ preloadImages:
 - The DaemonSet requires privileged access to run Docker-in-Docker
 - Ensure the hostPath directory has sufficient space for all images
 - Images are re-pulled when the image list changes (tracked via pod annotation checksum)
+- Images are automatically re-pulled when tar files exceed the configured age (`maxImageAge`)
