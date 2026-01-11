@@ -65,7 +65,7 @@ dockerd:
   # Resources for the dind sidecar container
   resources:
     limits:
-      cpu: 500m
+      cpu: 1
       memory: 1Gi
     requests:
       cpu: 100m
