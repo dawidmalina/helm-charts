@@ -116,20 +116,41 @@ spec:
             {{- $filename := include "image-preloader.imageToFilename" $image }}
             echo "Processing image: {{ $image }}"
             
-            # Check if tar file already exists
-            if [ -f "{{ $.Values.hostPath }}/{{ $filename }}" ]; then
-              echo "Image {{ $image }} already exists as {{ $filename }}, skipping..."
+            # Check if tar file already exists and its age
+            SHOULD_REBUILD=false
+            TAR_FILE="{{ $.Values.hostPath }}/{{ $filename }}"
+            
+            if [ -f "$TAR_FILE" ]; then
+              {{- if ge (int $.Values.maxImageAge) 0 }}
+              # Check file age
+              FILE_AGE_SECONDS=$(expr $(date +%s) - $(stat -c %Y "$TAR_FILE" 2>/dev/null || stat -f %m "$TAR_FILE" 2>/dev/null || echo 0))
+              MAX_AGE_SECONDS=$(expr {{ int $.Values.maxImageAge }} \* 86400)
+              
+              if [ $FILE_AGE_SECONDS -ge $MAX_AGE_SECONDS ]; then
+                echo "Image tar file {{ $filename }} is older than {{ $.Values.maxImageAge }} days (age: $(expr $FILE_AGE_SECONDS / 86400) days), rebuilding..."
+                SHOULD_REBUILD=true
+              else
+                echo "Image {{ $image }} already exists as {{ $filename }} and is up-to-date (age: $(expr $FILE_AGE_SECONDS / 86400) days), skipping..."
+              fi
+              {{- else }}
+              echo "Image {{ $image }} already exists as {{ $filename }}, skipping (age check disabled)..."
+              {{- end }}
             else
+              echo "Image tar file {{ $filename }} does not exist, building..."
+              SHOULD_REBUILD=true
+            fi
+            
+            if [ "$SHOULD_REBUILD" = "true" ]; then
               # Pull the image
               if docker pull {{ $image }}; then
                 echo "Successfully pulled {{ $image }}"
                 
                 # Create subdirectory if needed (for images like selenium/standalone-firefox)
-                TARGET_DIR=$(dirname "{{ $.Values.hostPath }}/{{ $filename }}")
+                TARGET_DIR=$(dirname "$TAR_FILE")
                 mkdir -p "$TARGET_DIR"
                 
                 # Save the image to tar file
-                if docker save {{ $image }} -o "{{ $.Values.hostPath }}/{{ $filename }}"; then
+                if docker save {{ $image }} -o "$TAR_FILE"; then
                   echo "Successfully saved {{ $image }} to {{ $filename }}"
                 else
                   echo "Error: Failed to save {{ $image }}"

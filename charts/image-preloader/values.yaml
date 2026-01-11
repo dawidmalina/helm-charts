@@ -20,6 +20,12 @@ images: []
 # Default: /opt/runner/images
 hostPath: /opt/runner/images
 
+# Maximum age (in days) for cached image tar files
+# If a tar file is older than this value, it will be rebuilt
+# Set to 0 to always rebuild, or a negative value to disable age check (never rebuild if file exists)
+# Default: 7 days
+maxImageAge: 7
+
 # Node selector for scheduling the DaemonSet pods
 # Example:
 # nodeSelector:
