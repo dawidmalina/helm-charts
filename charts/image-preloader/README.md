@@ -88,8 +88,8 @@ resources:
    - If the file is within the age limit, skips pulling
    - If the file doesn't exist, pulls the image and saves it as a tar file
    - Stores it in the configured hostPath
-5. After completing the initial preload, the preload-images container enters a daily check loop:
-   - Sleeps for 24 hours
+5. After completing the initial preload, the preload-images container enters an hourly check loop:
+   - Sleeps for 1 hour
    - Re-checks all images and rebuilds any that exceed the age threshold
    - This ensures images are kept fresh even if the pod runs continuously for extended periods
 6. The dind sidecar init container continues providing Docker daemon services throughout the pod lifecycle

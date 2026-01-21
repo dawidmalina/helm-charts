@@ -172,13 +172,13 @@ spec:
             
             echo "Docker image preloading completed successfully"
             
-            # Keep the container running and check daily for image updates
-            echo "Preloading complete. Starting daily check loop..."
+            # Keep the container running and check hourly for image updates
+            echo "Preloading complete. Starting hourly check loop..."
             while true; do
-              echo "Sleeping for 24 hours before next check..."
-              sleep 86400  # Sleep for 24 hours (86400 seconds)
+              echo "Sleeping for 1 hour before next check..."
+              sleep 3600  # Sleep for 1 hour (3600 seconds)
               
-              echo "Starting daily image age check..."
+              echo "Starting hourly image age check..."
               {{- range $image := .Values.images }}
               {{- $filename := include "image-preloader.imageToFilename" $image }}
               echo "Checking image: {{ $image }}"
@@ -237,7 +237,7 @@ spec:
               fi
               {{- end }}
               
-              echo "Daily image age check completed"
+              echo "Hourly image age check completed"
             done
         env:
         - name: DOCKER_HOST
