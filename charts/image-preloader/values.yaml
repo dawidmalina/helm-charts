@@ -26,6 +26,15 @@ hostPath: /opt/runner/images
 # Default: 7 days
 maxImageAge: 7
 
+# Check interval (in seconds) for periodic image age checks
+# The service will check and rebuild images at this interval
+# Default: 86400 seconds (24 hours / 1 day)
+# Examples:
+#   3600 = 1 hour
+#   43200 = 12 hours
+#   86400 = 24 hours (default)
+checkInterval: 86400
+
 # Node selector for scheduling the DaemonSet pods
 # Example:
 # nodeSelector:

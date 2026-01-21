@@ -35,6 +35,7 @@ helm install image-preloader ./charts/image-preloader \
 | `images` | List of Docker images to preload | `[]` |
 | `hostPath` | Host path where tar files will be saved | `/opt/runner/images` |
 | `maxImageAge` | Maximum age (in days) for cached image tar files. If older, rebuild. Set to 0 to always rebuild, or negative to disable age check | `7` |
+| `checkInterval` | Interval (in seconds) between periodic image age checks. Default is 86400 (24 hours). Examples: 3600 (1 hour), 43200 (12 hours), 86400 (24 hours) | `86400` |
 | `nodeSelector` | Node selector for pod scheduling | `{}` |
 | `tolerations` | Tolerations for pod scheduling | `[]` |
 | `podLabels` | Additional labels for pods | `{}` |
@@ -58,6 +59,9 @@ hostPath: /opt/runner/images
 
 # Rebuild image tar files older than 14 days
 maxImageAge: 14
+
+# Check for stale images every 12 hours
+checkInterval: 43200
 
 nodeSelector:
   kubernetes.io/os: linux
@@ -88,7 +92,10 @@ resources:
    - If the file is within the age limit, skips pulling
    - If the file doesn't exist, pulls the image and saves it as a tar file
    - Stores it in the configured hostPath
-5. After completing the preload, the preload-images container sleeps indefinitely to keep the pod running
+5. After completing the initial preload, the preload-images container enters a periodic check loop:
+   - Sleeps for the configured `checkInterval` (default: 24 hours)
+   - Re-checks all images and rebuilds any that exceed the age threshold
+   - This ensures images are kept fresh even if the pod runs continuously for extended periods
 6. The dind sidecar init container continues providing Docker daemon services throughout the pod lifecycle
 
 ### Age-Based Refresh Configuration
