@@ -13,6 +13,7 @@ env:
     value: "false"
 
 ingress:
+  enabled: false
   host: chart-example.local
   className: nginx
   annotations: {}
