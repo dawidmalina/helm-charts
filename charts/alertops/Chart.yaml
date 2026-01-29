@@ -1,0 +1,4 @@
+apiVersion: v2
+name: alertops
+description: A Helm chart for AlertOps application
+version: 0.1.0
