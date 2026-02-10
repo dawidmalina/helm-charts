@@ -2,6 +2,14 @@ apiVersion: v1
 entries:
   alertops:
   - apiVersion: v2
+    created: "2026-02-10T06:41:10.29043028Z"
+    description: A Helm chart for AlertOps application
+    digest: d3e3d09b77007e116412876f9895efa12e1af7fd7410e317e499d6c3217bfb93
+    name: alertops
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/alertops-0.1.1/alertops-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     created: "2026-01-29T11:09:54.172032177Z"
     description: A Helm chart for AlertOps application
     digest: 3d601f075ee283bd025328f7302fca276c547960b5d997508279198fd0713acf
@@ -1802,4 +1810,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
     version: 0.1.0
-generated: "2026-01-29T11:09:54.172354628Z"
+generated: "2026-02-10T06:41:10.290652855Z"
