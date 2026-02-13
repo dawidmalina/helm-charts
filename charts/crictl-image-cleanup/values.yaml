@@ -108,9 +108,9 @@ crioSocket:
   type: unix
 
 # Whether to run as a DaemonSet instead of CronJob
-# When true, runs cleanup periodically on each node
+# When true, runs cleanup periodically on each node (default and recommended)
 # When false, runs as a single CronJob that may not cover all nodes
-useDaemonSet: false
+useDaemonSet: true
 
 # DaemonSet-specific configuration (only used when useDaemonSet: true)
 daemonSet:

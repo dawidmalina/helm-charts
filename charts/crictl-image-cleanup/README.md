@@ -1,19 +1,21 @@
 # Crictl Image Cleanup Helm Chart
 
-This Helm chart deploys a solution for cleaning up unused container images on Kubernetes nodes using `crictl rmi --prune`.
+This Helm chart deploys a DaemonSet for cleaning up unused container images on Kubernetes nodes using `crictl rmi --prune`.
 
 ## Overview
 
-The crictl-image-cleanup chart helps manage container image storage on Kubernetes nodes by periodically removing unused images. It can run as either a CronJob for scheduled cluster-wide cleanups or as a DaemonSet for per-node periodic cleanups.
+The crictl-image-cleanup chart helps manage container image storage on Kubernetes nodes by periodically removing unused images. It runs as a DaemonSet on each node to ensure local image cleanup, with an optional CronJob mode for centralized scheduling.
 
 ## Features
 
-- **Flexible deployment**: Run as a CronJob or DaemonSet
-- **Configurable schedule**: Set custom cleanup intervals
+- **DaemonSet deployment**: Runs cleanup on all nodes by default
+- **Per-node cleanup**: Each node cleans up its own local images
+- **Configurable intervals**: Set custom cleanup intervals
 - **Node selection**: Target specific nodes with nodeSelector
 - **Tolerations**: Schedule on tainted nodes
 - **Resource management**: Configurable resource limits and requests
 - **Multiple runtime support**: Works with containerd, CRI-O, and other CRI-compatible runtimes
+- **Optional CronJob mode**: Alternative centralized scheduling mode available
 
 ## Prerequisites
 
@@ -23,32 +25,32 @@ The crictl-image-cleanup chart helps manage container image storage on Kubernete
 
 ## Installation
 
-### Basic Installation (CronJob mode)
+### Basic Installation (DaemonSet mode - default)
 
 ```bash
 helm install crictl-cleanup ./charts/crictl-image-cleanup
 ```
 
-This will create a CronJob that runs daily at 2 AM to clean up unused images.
+This will create a DaemonSet that runs on all nodes and cleans up unused images every 24 hours.
 
-### Installation with Custom Schedule
-
-```bash
-helm install crictl-cleanup ./charts/crictl-image-cleanup \
-  --set schedule="0 */6 * * *"
-```
-
-This runs the cleanup every 6 hours.
-
-### Installation as DaemonSet
+### Installation with Custom Cleanup Interval
 
 ```bash
 helm install crictl-cleanup ./charts/crictl-image-cleanup \
-  --set useDaemonSet=true \
   --set daemonSet.cleanupInterval=43200
 ```
 
 This runs cleanup on each node every 12 hours (43200 seconds).
+
+### Installation as CronJob (alternative mode)
+
+```bash
+helm install crictl-cleanup ./charts/crictl-image-cleanup \
+  --set useDaemonSet=false \
+  --set schedule="0 */6 * * *"
+```
+
+This runs the cleanup every 6 hours as a centralized CronJob (note: may not cover all nodes).
 
 ### Installation for CRI-O Runtime
 
@@ -87,16 +89,17 @@ helm install crictl-cleanup ./charts/crictl-image-cleanup \
 | `cronJob.ttlSecondsAfterFinished` | TTL for completed jobs | `86400` (1 day) |
 | `crioSocket.path` | Path to container runtime socket | `/var/run/containerd/containerd.sock` |
 | `crioSocket.type` | Socket type | `unix` |
-| `useDaemonSet` | Deploy as DaemonSet instead of CronJob | `false` |
+| `useDaemonSet` | Deploy as DaemonSet instead of CronJob | `true` |
 | `daemonSet.cleanupInterval` | Interval between cleanups (seconds, DaemonSet mode) | `86400` (24 hours) |
 | `daemonSet.updateStrategy.type` | DaemonSet update strategy | `RollingUpdate` |
 
 ## Example Configurations
 
-### Daily cleanup at 3 AM with specific nodes
+### Per-node cleanup every 6 hours with specific nodes (DaemonSet - recommended)
 
 ```yaml
-schedule: "0 3 * * *"
+daemonSet:
+  cleanupInterval: 21600  # 6 hours in seconds
 
 nodeSelector:
   kubernetes.io/os: linux
@@ -109,31 +112,29 @@ tolerations:
 
 resources:
   limits:
-    cpu: 1000m
-    memory: 1Gi
+    cpu: 500m
+    memory: 512Mi
   requests:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 100m
+    memory: 128Mi
 ```
 
-### DaemonSet mode for per-node cleanup every 6 hours
+### CronJob mode for scheduled cleanup (alternative)
 
 ```yaml
-useDaemonSet: true
-
-daemonSet:
-  cleanupInterval: 21600  # 6 hours in seconds
+useDaemonSet: false
+schedule: "0 3 * * *"
 
 nodeSelector:
   kubernetes.io/os: linux
 
 resources:
   limits:
-    cpu: 500m
-    memory: 512Mi
+    cpu: 1000m
+    memory: 1Gi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 200m
+    memory: 256Mi
 ```
 
 ### CRI-O runtime configuration
@@ -150,27 +151,27 @@ cleanup:
 
 ## How It Works
 
-### CronJob Mode (Default)
+### DaemonSet Mode (Default)
+
+1. A DaemonSet is created that runs on each node (based on nodeSelector/tolerations)
+2. Each pod:
+   - Connects to the local node's container runtime via the CRI socket
+   - Enters a loop that:
+     - Runs `crictl rmi --prune` to remove unused images from that node
+     - Sleeps for the configured interval (default: 24 hours)
+     - Repeats
+3. Pods run continuously on each node, ensuring all nodes are cleaned up locally
+
+### CronJob Mode (Alternative)
 
 1. A CronJob is created with the specified schedule
-2. At each scheduled time, a pod is created
+2. At each scheduled time, a pod is created on a single node
 3. The pod:
    - Connects to the container runtime via the CRI socket
    - Runs `crictl rmi --prune` to remove unused images
    - Reports success or failure
    - Terminates
-4. Kubernetes retains job history based on `successfulJobsHistoryLimit` and `failedJobsHistoryLimit`
-
-### DaemonSet Mode
-
-1. A DaemonSet is created that runs on each node (based on nodeSelector/tolerations)
-2. Each pod:
-   - Connects to the container runtime via the CRI socket
-   - Enters a loop that:
-     - Runs `crictl rmi --prune` to remove unused images
-     - Sleeps for the configured interval
-     - Repeats
-3. Pods run continuously on each node
+4. **Note**: CronJob mode only cleans up images on the node where the pod runs. For cluster-wide cleanup, DaemonSet mode is recommended.
 
 ## Runtime Socket Paths
 
