@@ -20,7 +20,7 @@ The crictl-image-cleanup chart helps manage container image storage on Kubernete
 
 - Kubernetes 1.19+
 - Container runtime with CRI support (containerd, CRI-O, etc.)
-- `crictl` binary available in the container image
+- Access to pull the `rancher/hardened-crictl` image (or use a custom image with crictl pre-installed)
 
 ## Installation
 
@@ -52,8 +52,8 @@ helm install crictl-cleanup ./charts/crictl-image-cleanup \
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `image.repository` | Container image repository | `registry.k8s.io/build-image/distroless-iptables` |
-| `image.tag` | Container image tag | `v0.5.10` |
+| `image.repository` | Container image repository | `rancher/hardened-crictl` |
+| `image.tag` | Container image tag | `v1.31.1-build20251017` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `cleanup.prune` | Enable `--prune` flag for crictl rmi | `true` |
 | `cleanup.extraArgs` | Additional arguments for crictl rmi | `[]` |
@@ -110,6 +110,28 @@ cleanup:
   extraArgs: []
 ```
 
+### Using a different crictl version
+
+To use a different version of crictl, specify a different image tag from [rancher/hardened-crictl](https://hub.docker.com/r/rancher/hardened-crictl/tags):
+
+```yaml
+image:
+  repository: rancher/hardened-crictl
+  tag: v1.30.1-build20251017  # Use a different crictl version
+  pullPolicy: IfNotPresent
+```
+
+### Using a custom image with crictl pre-installed
+
+If you need to use a different image or a private registry:
+
+```yaml
+image:
+  repository: my-registry.com/crictl-image
+  tag: latest
+  pullPolicy: IfNotPresent
+```
+
 ## How It Works
 
 ### DaemonSet Mode
@@ -145,7 +167,10 @@ These permissions are necessary for `crictl` to communicate with the container r
 
 ### DaemonSet fails with "crictl command not found"
 
-Ensure your container image includes the `crictl` binary. The default image (`registry.k8s.io/build-image/distroless-iptables`) includes crictl.
+The chart uses `rancher/hardened-crictl` image which includes the crictl binary. Ensure:
+- You can pull the `rancher/hardened-crictl` image from Docker Hub
+- If using a custom image, ensure it includes the crictl binary in the PATH
+- Check the pod logs for more details: `kubectl logs -l app.kubernetes.io/name=crictl-image-cleanup`
 
 ### Cannot connect to container runtime
 

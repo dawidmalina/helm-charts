@@ -57,11 +57,13 @@ spec:
             # Set crictl to use the container runtime socket
             export CONTAINER_RUNTIME_ENDPOINT={{ .Values.runtimeSocket.type }}://{{ .Values.runtimeSocket.path }}
             
-            # Check if crictl is available
+            # Verify crictl is available
             if ! command -v crictl >/dev/null 2>&1; then
               echo "Error: crictl command not found"
               exit 1
             fi
+            
+            echo "crictl version: $(crictl --version)"
             
             # Verify crictl can connect to the runtime
             echo "Checking crictl connection to runtime..."

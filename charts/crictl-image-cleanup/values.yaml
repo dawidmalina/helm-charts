@@ -5,9 +5,10 @@
 # Image configuration for the cleanup DaemonSet
 image:
   # Repository containing crictl binary
-  # Using a kubernetes-base image that has crictl pre-installed
-  repository: registry.k8s.io/build-image/distroless-iptables
-  tag: v0.5.10
+  # Using Rancher's hardened crictl image which includes crictl pre-installed
+  # See: https://hub.docker.com/r/rancher/hardened-crictl/tags
+  repository: rancher/hardened-crictl
+  tag: v1.31.1-build20251017
   pullPolicy: IfNotPresent
 
 # Cleanup command options
