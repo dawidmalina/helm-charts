@@ -4,18 +4,17 @@ This Helm chart deploys a DaemonSet for cleaning up unused container images on K
 
 ## Overview
 
-The crictl-image-cleanup chart helps manage container image storage on Kubernetes nodes by periodically removing unused images. It runs as a DaemonSet on each node to ensure local image cleanup, with an optional CronJob mode for centralized scheduling.
+The crictl-image-cleanup chart helps manage container image storage on Kubernetes nodes by periodically removing unused images. It runs as a DaemonSet on each node to ensure all nodes perform local image cleanup.
 
 ## Features
 
-- **DaemonSet deployment**: Runs cleanup on all nodes by default
+- **DaemonSet deployment**: Runs cleanup on all nodes
 - **Per-node cleanup**: Each node cleans up its own local images
 - **Configurable intervals**: Set custom cleanup intervals
 - **Node selection**: Target specific nodes with nodeSelector
 - **Tolerations**: Schedule on tainted nodes
 - **Resource management**: Configurable resource limits and requests
 - **Multiple runtime support**: Works with containerd, CRI-O, and other CRI-compatible runtimes
-- **Optional CronJob mode**: Alternative centralized scheduling mode available
 
 ## Prerequisites
 
@@ -25,7 +24,7 @@ The crictl-image-cleanup chart helps manage container image storage on Kubernete
 
 ## Installation
 
-### Basic Installation (DaemonSet mode - default)
+### Basic Installation
 
 ```bash
 helm install crictl-cleanup ./charts/crictl-image-cleanup
@@ -37,20 +36,10 @@ This will create a DaemonSet that runs on all nodes and cleans up unused images 
 
 ```bash
 helm install crictl-cleanup ./charts/crictl-image-cleanup \
-  --set daemonSet.cleanupInterval=43200
+  --set cleanupInterval=43200
 ```
 
 This runs cleanup on each node every 12 hours (43200 seconds).
-
-### Installation as CronJob (alternative mode)
-
-```bash
-helm install crictl-cleanup ./charts/crictl-image-cleanup \
-  --set useDaemonSet=false \
-  --set schedule="0 */6 * * *"
-```
-
-This runs the cleanup every 6 hours as a centralized CronJob (note: may not cover all nodes).
 
 ### Installation for CRI-O Runtime
 
@@ -66,7 +55,6 @@ helm install crictl-cleanup ./charts/crictl-image-cleanup \
 | `image.repository` | Container image repository | `registry.k8s.io/build-image/distroless-iptables` |
 | `image.tag` | Container image tag | `v0.5.10` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
-| `schedule` | CronJob schedule (cron format) | `"0 2 * * *"` (daily at 2 AM) |
 | `cleanup.prune` | Enable `--prune` flag for crictl rmi | `true` |
 | `cleanup.extraArgs` | Additional arguments for crictl rmi | `[]` |
 | `nodeSelector` | Node selector for pod scheduling | `{}` |
@@ -80,26 +68,17 @@ helm install crictl-cleanup ./charts/crictl-image-cleanup \
 | `serviceAccount.create` | Create a service account | `true` |
 | `serviceAccount.name` | Service account name | `""` |
 | `serviceAccount.annotations` | Service account annotations | `{}` |
-| `cronJob.successfulJobsHistoryLimit` | Number of successful jobs to retain | `3` |
-| `cronJob.failedJobsHistoryLimit` | Number of failed jobs to retain | `1` |
-| `cronJob.concurrencyPolicy` | Concurrency policy (Allow, Forbid, Replace) | `Forbid` |
-| `cronJob.startingDeadlineSeconds` | Deadline for starting missed jobs | `300` |
-| `cronJob.restartPolicy` | Pod restart policy | `OnFailure` |
-| `cronJob.backoffLimit` | Number of retries before failure | `3` |
-| `cronJob.ttlSecondsAfterFinished` | TTL for completed jobs | `86400` (1 day) |
 | `runtimeSocket.path` | Path to container runtime socket | `/var/run/containerd/containerd.sock` |
 | `runtimeSocket.type` | Socket type | `unix` |
-| `useDaemonSet` | Deploy as DaemonSet instead of CronJob | `true` |
-| `daemonSet.cleanupInterval` | Interval between cleanups (seconds, DaemonSet mode) | `86400` (24 hours) |
-| `daemonSet.updateStrategy.type` | DaemonSet update strategy | `RollingUpdate` |
+| `cleanupInterval` | Interval between cleanups (seconds) | `86400` (24 hours) |
+| `updateStrategy.type` | DaemonSet update strategy | `RollingUpdate` |
 
 ## Example Configurations
 
-### Per-node cleanup every 6 hours with specific nodes (DaemonSet - recommended)
+### Per-node cleanup every 6 hours with specific nodes
 
 ```yaml
-daemonSet:
-  cleanupInterval: 21600  # 6 hours in seconds
+cleanupInterval: 21600  # 6 hours in seconds
 
 nodeSelector:
   kubernetes.io/os: linux
@@ -119,24 +98,6 @@ resources:
     memory: 128Mi
 ```
 
-### CronJob mode for scheduled cleanup (alternative)
-
-```yaml
-useDaemonSet: false
-schedule: "0 3 * * *"
-
-nodeSelector:
-  kubernetes.io/os: linux
-
-resources:
-  limits:
-    cpu: 1000m
-    memory: 1Gi
-  requests:
-    cpu: 200m
-    memory: 256Mi
-```
-
 ### CRI-O runtime configuration
 
 ```yaml
@@ -151,7 +112,7 @@ cleanup:
 
 ## How It Works
 
-### DaemonSet Mode (Default)
+### DaemonSet Mode
 
 1. A DaemonSet is created that runs on each node (based on nodeSelector/tolerations)
 2. Each pod:
@@ -161,17 +122,6 @@ cleanup:
      - Sleeps for the configured interval (default: 24 hours)
      - Repeats
 3. Pods run continuously on each node, ensuring all nodes are cleaned up locally
-
-### CronJob Mode (Alternative)
-
-1. A CronJob is created with the specified schedule
-2. At each scheduled time, a pod is created on a single node
-3. The pod:
-   - Connects to the container runtime via the CRI socket
-   - Runs `crictl rmi --prune` to remove unused images
-   - Reports success or failure
-   - Terminates
-4. **Note**: CronJob mode only cleans up images on the node where the pod runs. For cluster-wide cleanup, DaemonSet mode is recommended.
 
 ## Runtime Socket Paths
 
@@ -193,7 +143,7 @@ These permissions are necessary for `crictl` to communicate with the container r
 
 ## Troubleshooting
 
-### Cleanup job fails with "crictl command not found"
+### DaemonSet fails with "crictl command not found"
 
 Ensure your container image includes the `crictl` binary. The default image (`registry.k8s.io/build-image/distroless-iptables`) includes crictl.
 
@@ -203,10 +153,10 @@ Ensure your container image includes the `crictl` binary. The default image (`re
 - Check that the socket exists on the node: `ls -la /var/run/containerd/containerd.sock`
 - Ensure the pod has the necessary permissions (privileged, hostNetwork, hostPID)
 
-### Job succeeds but images aren't cleaned up
+### DaemonSet succeeds but images aren't cleaned up
 
 - Verify that images are actually unused (not referenced by running containers)
-- Check the job logs for warnings or errors
+- Check the DaemonSet logs for warnings or errors: `kubectl logs -l app.kubernetes.io/name=crictl-image-cleanup`
 - Consider adding `cleanup.extraArgs` for more aggressive cleanup
 
 ## Uninstallation

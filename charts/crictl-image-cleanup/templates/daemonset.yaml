@@ -1,4 +1,3 @@
-{{- if .Values.useDaemonSet }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -7,7 +6,7 @@ metadata:
     {{- include "crictl-image-cleanup.labels" . | nindent 4 }}
 spec:
   updateStrategy:
-    {{- toYaml .Values.daemonSet.updateStrategy | nindent 4 }}
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "crictl-image-cleanup.selectorLabels" . | nindent 6 }}
@@ -95,8 +94,8 @@ spec:
                 echo "Warning: Image cleanup command failed with exit code $? at $(date)"
               fi
               
-              echo "Sleeping for {{ .Values.daemonSet.cleanupInterval }} seconds until next cleanup..."
-              sleep {{ .Values.daemonSet.cleanupInterval }}
+              echo "Sleeping for {{ .Values.cleanupInterval }} seconds until next cleanup..."
+              sleep {{ .Values.cleanupInterval }}
             done
         env:
         - name: CONTAINER_RUNTIME_ENDPOINT
@@ -113,4 +112,3 @@ spec:
         hostPath:
           path: {{ .Values.runtimeSocket.path }}
           type: Socket
-{{- end }}
