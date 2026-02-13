@@ -1,0 +1,124 @@
+# Default values for crictl-image-cleanup.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Image configuration for the cleanup job
+image:
+  # Repository containing crictl binary
+  # Using a kubernetes-base image that has crictl pre-installed
+  repository: registry.k8s.io/build-image/distroless-iptables
+  tag: v0.5.10
+  pullPolicy: IfNotPresent
+
+# CronJob schedule for running the cleanup
+# Default: Run daily at 2 AM
+# Format: Standard cron format (minute hour day month weekday)
+# Examples:
+#   "0 2 * * *" - Daily at 2 AM
+#   "0 */6 * * *" - Every 6 hours
+#   "0 0 * * 0" - Weekly on Sunday at midnight
+schedule: "0 2 * * *"
+
+# Cleanup command options
+cleanup:
+  # Run crictl rmi --prune to remove unused images
+  prune: true
+  # Additional arguments to pass to crictl rmi
+  # Example: ["--all"] to remove all unused images
+  extraArgs: []
+
+# Node selector for scheduling the cleanup job pods
+# This ensures the job runs on nodes where cleanup is needed
+# Example:
+# nodeSelector:
+#   kubernetes.io/os: linux
+nodeSelector: {}
+
+# Tolerations for scheduling the cleanup job pods
+# Allows the job to run on nodes with specific taints
+# Example:
+# tolerations:
+#   - key: "node-role.kubernetes.io/control-plane"
+#     operator: "Exists"
+#     effect: "NoSchedule"
+tolerations: []
+
+# Additional labels to add to the CronJob pods
+podLabels: {}
+
+# Additional annotations to add to the CronJob pods
+podAnnotations: {}
+
+# Security context for the pod
+# Must run as root and be privileged to access crictl socket
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+  fsGroup: 0
+
+# Security context for the container
+# Privileged access is required to interact with container runtime
+securityContext:
+  privileged: true
+
+# Resources for the cleanup container
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: ""
+  # Annotations to add to the service account
+  annotations: {}
+
+# CronJob configuration
+cronJob:
+  # Number of successful finished jobs to retain
+  successfulJobsHistoryLimit: 3
+  # Number of failed finished jobs to retain
+  failedJobsHistoryLimit: 1
+  # Concurrency policy: Allow, Forbid, or Replace
+  concurrencyPolicy: Forbid
+  # Deadline in seconds for starting the job if it misses scheduled time
+  startingDeadlineSeconds: 300
+  # Restart policy for the job pod
+  restartPolicy: OnFailure
+  # Number of retries before considering a job as failed
+  backoffLimit: 3
+  # Time to live after job finishes (in seconds)
+  # Set to clean up completed jobs automatically
+  ttlSecondsAfterFinished: 86400
+
+# Host path for crictl socket
+# This is where the container runtime socket is located
+# Common paths:
+#   - /var/run/containerd/containerd.sock (containerd)
+#   - /var/run/crio/crio.sock (CRI-O)
+#   - /run/containerd/containerd.sock (some containerd installations)
+crioSocket:
+  # Path to the container runtime socket on the host
+  path: /var/run/containerd/containerd.sock
+  # Socket type (unix, tcp, etc.)
+  type: unix
+
+# Whether to run as a DaemonSet instead of CronJob
+# When true, runs cleanup periodically on each node
+# When false, runs as a single CronJob that may not cover all nodes
+useDaemonSet: false
+
+# DaemonSet-specific configuration (only used when useDaemonSet: true)
+daemonSet:
+  # Interval in seconds between cleanup runs when using DaemonSet
+  # Default: 86400 seconds (24 hours)
+  cleanupInterval: 86400
+  # Update strategy for the DaemonSet
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1

@@ -1,0 +1,116 @@
+{{- if .Values.useDaemonSet }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "crictl-image-cleanup.fullname" . }}
+  labels:
+    {{- include "crictl-image-cleanup.labels" . | nindent 4 }}
+spec:
+  updateStrategy:
+    {{- toYaml .Values.daemonSet.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "crictl-image-cleanup.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "crictl-image-cleanup.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "crictl-image-cleanup.serviceAccountName" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: crictl-cleanup
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            set -e
+            echo "Starting crictl image cleanup daemon..."
+            
+            # Set crictl to use the container runtime socket
+            export CONTAINER_RUNTIME_ENDPOINT={{ .Values.crioSocket.type }}://{{ .Values.crioSocket.path }}
+            
+            # Check if crictl is available
+            if ! command -v crictl >/dev/null 2>&1; then
+              echo "Error: crictl command not found"
+              exit 1
+            fi
+            
+            # Verify crictl can connect to the runtime
+            echo "Checking crictl connection to runtime..."
+            if ! crictl info >/dev/null 2>&1; then
+              echo "Error: Cannot connect to container runtime at ${CONTAINER_RUNTIME_ENDPOINT}"
+              exit 1
+            fi
+            
+            echo "Connected to container runtime successfully"
+            
+            # Run cleanup loop
+            while true; do
+              echo "Starting image cleanup at $(date)"
+              
+              # Build crictl rmi command
+              CRICTL_CMD="crictl rmi"
+              {{- if .Values.cleanup.prune }}
+              CRICTL_CMD="${CRICTL_CMD} --prune"
+              {{- end }}
+              {{- if .Values.cleanup.extraArgs }}
+              CRICTL_CMD="${CRICTL_CMD} {{ join " " .Values.cleanup.extraArgs }}"
+              {{- end }}
+              
+              echo "Running command: ${CRICTL_CMD}"
+              
+              # Run the cleanup command
+              if eval "${CRICTL_CMD}"; then
+                echo "Image cleanup completed successfully at $(date)"
+              else
+                echo "Warning: Image cleanup command failed with exit code $? at $(date)"
+              fi
+              
+              echo "Sleeping for {{ .Values.daemonSet.cleanupInterval }} seconds until next cleanup..."
+              sleep {{ .Values.daemonSet.cleanupInterval }}
+            done
+        env:
+        - name: CONTAINER_RUNTIME_ENDPOINT
+          value: "{{ .Values.crioSocket.type }}://{{ .Values.crioSocket.path }}"
+        volumeMounts:
+        - name: crio-socket
+          mountPath: {{ .Values.crioSocket.path }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: crio-socket
+        hostPath:
+          path: {{ .Values.crioSocket.path }}
+          type: Socket
+{{- end }}

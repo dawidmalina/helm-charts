@@ -1,0 +1,5 @@
+apiVersion: v2
+name: crictl-image-cleanup
+description: A Helm chart for cleaning up unused container images using crictl
+type: application
+version: 0.1.0

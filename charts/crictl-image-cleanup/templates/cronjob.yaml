@@ -1,0 +1,128 @@
+{{- if not .Values.useDaemonSet }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "crictl-image-cleanup.fullname" . }}
+  labels:
+    {{- include "crictl-image-cleanup.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.cronJob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronJob.failedJobsHistoryLimit }}
+  concurrencyPolicy: {{ .Values.cronJob.concurrencyPolicy }}
+  {{- with .Values.cronJob.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ . }}
+  {{- end }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "crictl-image-cleanup.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.cronJob.backoffLimit }}
+      backoffLimit: {{ . }}
+      {{- end }}
+      {{- with .Values.cronJob.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          annotations:
+            {{- with .Values.podAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          labels:
+            {{- include "crictl-image-cleanup.selectorLabels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- if .Values.serviceAccount.create }}
+          serviceAccountName: {{ include "crictl-image-cleanup.serviceAccountName" . }}
+          {{- end }}
+          {{- with .Values.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          restartPolicy: {{ .Values.cronJob.restartPolicy }}
+          hostNetwork: true
+          hostPID: true
+          containers:
+          - name: crictl-cleanup
+            image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- with .Values.securityContext }}
+            securityContext:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            command: ["/bin/sh"]
+            args:
+              - -c
+              - |
+                set -e
+                echo "Starting crictl image cleanup..."
+                
+                # Set crictl to use the container runtime socket
+                export CONTAINER_RUNTIME_ENDPOINT={{ .Values.crioSocket.type }}://{{ .Values.crioSocket.path }}
+                
+                # Check if crictl is available
+                if ! command -v crictl >/dev/null 2>&1; then
+                  echo "Error: crictl command not found"
+                  exit 1
+                fi
+                
+                # Verify crictl can connect to the runtime
+                echo "Checking crictl connection to runtime..."
+                if ! crictl info >/dev/null 2>&1; then
+                  echo "Error: Cannot connect to container runtime at ${CONTAINER_RUNTIME_ENDPOINT}"
+                  exit 1
+                fi
+                
+                echo "Connected to container runtime successfully"
+                
+                # Build crictl rmi command
+                CRICTL_CMD="crictl rmi"
+                {{- if .Values.cleanup.prune }}
+                CRICTL_CMD="${CRICTL_CMD} --prune"
+                {{- end }}
+                {{- if .Values.cleanup.extraArgs }}
+                CRICTL_CMD="${CRICTL_CMD} {{ join " " .Values.cleanup.extraArgs }}"
+                {{- end }}
+                
+                echo "Running command: ${CRICTL_CMD}"
+                
+                # Run the cleanup command
+                if eval "${CRICTL_CMD}"; then
+                  echo "Image cleanup completed successfully"
+                else
+                  echo "Warning: Image cleanup command failed with exit code $?"
+                  exit 1
+                fi
+                
+                echo "Crictl image cleanup finished"
+            env:
+            - name: CONTAINER_RUNTIME_ENDPOINT
+              value: "{{ .Values.crioSocket.type }}://{{ .Values.crioSocket.path }}"
+            volumeMounts:
+            - name: crio-socket
+              mountPath: {{ .Values.crioSocket.path }}
+            {{- with .Values.resources }}
+            resources:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+          volumes:
+          - name: crio-socket
+            hostPath:
+              path: {{ .Values.crioSocket.path }}
+              type: Socket
+{{- end }}
