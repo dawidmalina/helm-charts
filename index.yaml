@@ -19,6 +19,15 @@ entries:
     version: 0.1.0
   crictl-image-cleanup:
   - apiVersion: v2
+    created: "2026-02-13T15:59:20.332413952Z"
+    description: A Helm chart for cleaning up unused container images using crictl
+    digest: e4d4219c9ce24904bf4daa1f0e786f0fbe330add6e2f89348ef1d5fc689266a9
+    name: crictl-image-cleanup
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/crictl-image-cleanup-0.1.1/crictl-image-cleanup-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
     created: "2026-02-13T14:57:12.464546766Z"
     description: A Helm chart for cleaning up unused container images using crictl
     digest: 902beecdb04bd051ca9a9e5985b4f8f6e1fa89b0eeeb1406492ac64f14a0a385
@@ -1820,4 +1829,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-13T14:57:12.464779164Z"
+generated: "2026-02-13T15:59:20.332635091Z"
