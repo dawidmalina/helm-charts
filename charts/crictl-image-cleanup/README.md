@@ -20,7 +20,7 @@ The crictl-image-cleanup chart helps manage container image storage on Kubernete
 
 - Kubernetes 1.19+
 - Container runtime with CRI support (containerd, CRI-O, etc.)
-- `crictl` binary available in the container image
+- Nodes with internet access to download crictl binary (or use a custom image with crictl pre-installed)
 
 ## Installation
 
@@ -52,9 +52,10 @@ helm install crictl-cleanup ./charts/crictl-image-cleanup \
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `image.repository` | Container image repository | `registry.k8s.io/build-image/distroless-iptables` |
-| `image.tag` | Container image tag | `v0.5.10` |
+| `image.repository` | Container image repository | `alpine` |
+| `image.tag` | Container image tag | `3.19` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
+| `crictl.version` | Version of crictl to download | `v1.31.1` |
 | `cleanup.prune` | Enable `--prune` flag for crictl rmi | `true` |
 | `cleanup.extraArgs` | Additional arguments for crictl rmi | `[]` |
 | `nodeSelector` | Node selector for pod scheduling | `{}` |
@@ -110,6 +111,26 @@ cleanup:
   extraArgs: []
 ```
 
+### Custom crictl version
+
+```yaml
+crictl:
+  version: v1.30.0  # Use a specific crictl version
+```
+
+### Using a custom image with crictl pre-installed
+
+If your nodes don't have internet access, you can build and use a custom image:
+
+```yaml
+image:
+  repository: my-registry.com/crictl-image
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# crictl.version is ignored when using a custom image with crictl pre-installed
+```
+
 ## How It Works
 
 ### DaemonSet Mode
@@ -145,7 +166,10 @@ These permissions are necessary for `crictl` to communicate with the container r
 
 ### DaemonSet fails with "crictl command not found"
 
-Ensure your container image includes the `crictl` binary. The default image (`registry.k8s.io/build-image/distroless-iptables`) includes crictl.
+The chart now automatically downloads and installs the crictl binary at runtime. Ensure:
+- Nodes have internet access to download from GitHub releases
+- The `crictl.version` parameter is set to a valid release version
+- Alternatively, you can use a custom image with crictl pre-installed by setting `image.repository` and `image.tag`
 
 ### Cannot connect to container runtime
 

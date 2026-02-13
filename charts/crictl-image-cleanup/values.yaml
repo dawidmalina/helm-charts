@@ -4,11 +4,17 @@
 
 # Image configuration for the cleanup DaemonSet
 image:
-  # Repository containing crictl binary
-  # Using a kubernetes-base image that has crictl pre-installed
-  repository: registry.k8s.io/build-image/distroless-iptables
-  tag: v0.5.10
+  # Repository for base image with shell support
+  # Alpine is used to download and install crictl binary at runtime
+  repository: alpine
+  tag: "3.19"
   pullPolicy: IfNotPresent
+
+# crictl configuration
+crictl:
+  # Version of crictl to download and use
+  # Should match or be compatible with Kubernetes version
+  version: v1.31.1
 
 # Cleanup command options
 cleanup:
