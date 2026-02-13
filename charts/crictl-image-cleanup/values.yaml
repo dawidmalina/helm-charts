@@ -7,7 +7,7 @@ image:
   # Repository containing crictl binary
   # Using a kubernetes-base image that has crictl pre-installed
   repository: registry.k8s.io/build-image/distroless-iptables
-  tag: v0.5.10
+  tag: v0.8.8
   pullPolicy: IfNotPresent
 
 # Cleanup command options
