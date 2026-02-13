@@ -95,13 +95,13 @@ cronJob:
   # Set to clean up completed jobs automatically
   ttlSecondsAfterFinished: 86400
 
-# Host path for crictl socket
+# Host path for container runtime socket
 # This is where the container runtime socket is located
 # Common paths:
 #   - /var/run/containerd/containerd.sock (containerd)
 #   - /var/run/crio/crio.sock (CRI-O)
 #   - /run/containerd/containerd.sock (some containerd installations)
-crioSocket:
+runtimeSocket:
   # Path to the container runtime socket on the host
   path: /var/run/containerd/containerd.sock
   # Socket type (unix, tcp, etc.)

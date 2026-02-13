@@ -56,7 +56,7 @@ This runs the cleanup every 6 hours as a centralized CronJob (note: may not cove
 
 ```bash
 helm install crictl-cleanup ./charts/crictl-image-cleanup \
-  --set crioSocket.path=/var/run/crio/crio.sock
+  --set runtimeSocket.path=/var/run/crio/crio.sock
 ```
 
 ## Configuration
@@ -87,8 +87,8 @@ helm install crictl-cleanup ./charts/crictl-image-cleanup \
 | `cronJob.restartPolicy` | Pod restart policy | `OnFailure` |
 | `cronJob.backoffLimit` | Number of retries before failure | `3` |
 | `cronJob.ttlSecondsAfterFinished` | TTL for completed jobs | `86400` (1 day) |
-| `crioSocket.path` | Path to container runtime socket | `/var/run/containerd/containerd.sock` |
-| `crioSocket.type` | Socket type | `unix` |
+| `runtimeSocket.path` | Path to container runtime socket | `/var/run/containerd/containerd.sock` |
+| `runtimeSocket.type` | Socket type | `unix` |
 | `useDaemonSet` | Deploy as DaemonSet instead of CronJob | `true` |
 | `daemonSet.cleanupInterval` | Interval between cleanups (seconds, DaemonSet mode) | `86400` (24 hours) |
 | `daemonSet.updateStrategy.type` | DaemonSet update strategy | `RollingUpdate` |
@@ -140,7 +140,7 @@ resources:
 ### CRI-O runtime configuration
 
 ```yaml
-crioSocket:
+runtimeSocket:
   path: /var/run/crio/crio.sock
   type: unix
 
@@ -199,7 +199,7 @@ Ensure your container image includes the `crictl` binary. The default image (`re
 
 ### Cannot connect to container runtime
 
-- Verify the `crioSocket.path` matches your runtime's socket location
+- Verify the `runtimeSocket.path` matches your runtime's socket location
 - Check that the socket exists on the node: `ls -la /var/run/containerd/containerd.sock`
 - Ensure the pod has the necessary permissions (privileged, hostNetwork, hostPID)
 

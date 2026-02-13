@@ -73,7 +73,7 @@ spec:
                 echo "Starting crictl image cleanup..."
                 
                 # Set crictl to use the container runtime socket
-                export CONTAINER_RUNTIME_ENDPOINT={{ .Values.crioSocket.type }}://{{ .Values.crioSocket.path }}
+                export CONTAINER_RUNTIME_ENDPOINT={{ .Values.runtimeSocket.type }}://{{ .Values.runtimeSocket.path }}
                 
                 # Check if crictl is available
                 if ! command -v crictl >/dev/null 2>&1; then
@@ -112,17 +112,17 @@ spec:
                 echo "Crictl image cleanup finished"
             env:
             - name: CONTAINER_RUNTIME_ENDPOINT
-              value: "{{ .Values.crioSocket.type }}://{{ .Values.crioSocket.path }}"
+              value: "{{ .Values.runtimeSocket.type }}://{{ .Values.runtimeSocket.path }}"
             volumeMounts:
-            - name: crio-socket
-              mountPath: {{ .Values.crioSocket.path }}
+            - name: runtime-socket
+              mountPath: {{ .Values.runtimeSocket.path }}
             {{- with .Values.resources }}
             resources:
               {{- toYaml . | nindent 14 }}
             {{- end }}
           volumes:
-          - name: crio-socket
+          - name: runtime-socket
             hostPath:
-              path: {{ .Values.crioSocket.path }}
+              path: {{ .Values.runtimeSocket.path }}
               type: Socket
 {{- end }}
