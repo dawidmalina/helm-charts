@@ -4,17 +4,12 @@
 
 # Image configuration for the cleanup DaemonSet
 image:
-  # Repository for base image with shell support
-  # Alpine is used to download and install crictl binary at runtime
-  repository: alpine
-  tag: "3.19"
+  # Repository containing crictl binary
+  # Using Rancher's hardened crictl image which includes crictl pre-installed
+  # See: https://hub.docker.com/r/rancher/hardened-crictl/tags
+  repository: rancher/hardened-crictl
+  tag: v1.31.1-build20251017
   pullPolicy: IfNotPresent
-
-# crictl configuration
-crictl:
-  # Version of crictl to download and use
-  # Should match or be compatible with Kubernetes version
-  version: v1.31.1
 
 # Cleanup command options
 cleanup:
