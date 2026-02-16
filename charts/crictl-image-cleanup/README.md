@@ -138,6 +138,7 @@ image:
 
 1. A DaemonSet is created that runs on each node (based on nodeSelector/tolerations)
 2. Each pod:
+   - Creates a `/etc/crictl.yaml` configuration file with the runtime endpoint to prevent configuration warnings
    - Connects to the local node's container runtime via the CRI socket
    - Enters a loop that:
      - Runs `crictl rmi --prune` to remove unused images from that node

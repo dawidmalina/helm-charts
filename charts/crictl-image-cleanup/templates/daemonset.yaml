@@ -54,6 +54,13 @@ spec:
             set -e
             echo "Starting crictl image cleanup daemon..."
             
+            # Create crictl config file to prevent warning about missing config
+            printf '%s\n' \
+              'runtime-endpoint: {{ .Values.runtimeSocket.type }}://{{ .Values.runtimeSocket.path }}' \
+              'image-endpoint: {{ .Values.runtimeSocket.type }}://{{ .Values.runtimeSocket.path }}' \
+              'timeout: 10' \
+              > /etc/crictl.yaml
+            
             # Set crictl to use the container runtime socket
             export CONTAINER_RUNTIME_ENDPOINT={{ .Values.runtimeSocket.type }}://{{ .Values.runtimeSocket.path }}
             
