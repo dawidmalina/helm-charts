@@ -8,7 +8,7 @@ image:
   # Using Rancher's hardened crictl image which includes crictl pre-installed
   # See: https://hub.docker.com/r/rancher/hardened-crictl/tags
   repository: rancher/hardened-crictl
-  tag: v1.31.1-build20251017
+  tag: v1.34.0-build20251017
   pullPolicy: IfNotPresent
 
 # Cleanup command options
