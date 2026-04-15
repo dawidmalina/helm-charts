@@ -46,6 +46,11 @@ rbac:
   # -- Create RBAC resources
   create: true
 
+# CRD configuration
+crd:
+  # -- Install the Plans CRD
+  install: true
+
 # System Upgrade Controller configuration
 controller:
   # -- Number of controller replicas
