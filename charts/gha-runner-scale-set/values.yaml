@@ -1,6 +1,8 @@
 ## githubConfigUrl is the GitHub url for where you want to configure runners
-## ex: https://github.com/myorg/myrepo or https://github.com/myorg
+## ex: https://github.com/myorg/myrepo or https://github.com/myorg or https://github.com/enterprises/myenterprise
 githubConfigUrl: ""
+
+scaleSetLabels: []
 
 ## githubConfigSecret is the k8s secret information to use when authenticating via the GitHub API.
 ## You can choose to supply:
@@ -115,7 +117,7 @@ githubConfigSecret:
 ## If any customization is required for dind or kubernetes mode, containerMode should remain
 ## empty, and configuration should be applied to the template.
 # containerMode:
-#   type: "dind"  ## type can be set to dind or kubernetes
+#   type: "dind"  ## type can be set to "dind", "kubernetes", or "kubernetes-novolume"
 #   ## the following is required when containerMode.type=kubernetes
 #   kubernetesModeWorkVolumeClaim:
 #     accessModes: ["ReadWriteOnce"]
@@ -124,23 +126,7 @@ githubConfigSecret:
 #     resources:
 #       requests:
 #         storage: 1Gi
-#
-## To add custom environment variables to the dind container, you can specify them
-## in the template.spec.containers section (recommended approach):
-# template:
-#   spec:
-#     containers:
-#       - name: dind
-#         env:
-#           - name: HTTP_PROXY
-#             value: "http://proxy.example.com:8080"
-#           - name: MY_SECRET
-#             valueFrom:
-#               secretKeyRef:
-#                 name: my-secret
-#                 key: password
-#       - name: runner
-#         image: ghcr.io/actions/actions-runner:latest
+#   kubernetesModeAdditionalRoleRules: []
 #
 
 ## listenerTemplate is the PodSpec for each listener Pod
@@ -171,7 +157,7 @@ githubConfigSecret:
 #   counters:
 #     gha_started_jobs_total:
 #       labels:
-#         ["repository", "organization", "enterprise", "job_name", "event_name", "job_workflow_ref"]
+#         ["repository", "organization", "enterprise", "job_name", "event_name", "job_workflow_ref", "job_workflow_name", "job_workflow_target"]
 #     gha_completed_jobs_total:
 #       labels:
 #         [
@@ -182,6 +168,8 @@ githubConfigSecret:
 #           "event_name",
 #           "job_result",
 #           "job_workflow_ref",
+#           "job_workflow_name",
+#           "job_workflow_target",
 #         ]
 #   gauges:
 #     gha_assigned_jobs:
@@ -203,7 +191,7 @@ githubConfigSecret:
 #   histograms:
 #     gha_job_startup_duration_seconds:
 #       labels:
-#         ["repository", "organization", "enterprise", "job_name", "event_name","job_workflow_ref"]
+#         ["repository", "organization", "enterprise", "job_name", "event_name","job_workflow_ref", "job_workflow_name", "job_workflow_target"]
 #       buckets:
 #         [
 #           0.01,
@@ -261,7 +249,9 @@ githubConfigSecret:
 #           "job_name",
 #           "event_name",
 #           "job_result",
-#           "job_workflow_ref"
+#           "job_workflow_ref",
+#           "job_workflow_name",
+#           "job_workflow_target"
 #         ]
 #       buckets:
 #         [
@@ -343,10 +333,9 @@ template:
   ##           command:
   ##             - docker
   ##             - info
-  ##         initialDelaySeconds: 10
+  ##         initialDelaySeconds: 0
+  ##         failureThreshold: 24
   ##         periodSeconds: 5
-  ##         timeoutSeconds: 5
-  ##         failureThreshold: 60  # 5 minutes total (60 * 5s)
   ##       volumeMounts:
   ##         - name: work
   ##           mountPath: /home/runner/_work
@@ -405,6 +394,25 @@ template:
   ##               resources:
   ##                 requests:
   ##                   storage: 1Gi
+  ######################################################################################################
+  ## with containerMode.type=kubernetes-novolume, we will populate the template.spec with following pod spec
+  ## template:
+  ##   spec:
+  ##     containers:
+  ##     - name: runner
+  ##       image: ghcr.io/actions/actions-runner:latest
+  ##       command: ["/home/runner/run.sh"]
+  ##       env:
+  ##         - name: ACTIONS_RUNNER_CONTAINER_HOOKS
+  ##           value: /home/runner/k8s-novolume/index.js
+  ##         - name: ACTIONS_RUNNER_POD_NAME
+  ##           valueFrom:
+  ##             fieldRef:
+  ##               fieldPath: metadata.name
+  ##         - name: ACTIONS_RUNNER_IMAGE
+  ##           value: ghcr.io/actions/actions-runner:latest # should match the runnerimage
+  ##         - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+  ##           value: "true"
   spec:
     containers:
       - name: runner
@@ -482,6 +490,46 @@ namespaceOverride: ""
 #       key: value
 #     annotations:
 #       key: value
+#   autoscalingListener:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   listenerServiceAccount:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   listenerRole:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   listenerRoleBinding:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   listenerConfigSecret:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   ephemeralRunnerSet:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   ephemeralRunner:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
+#   ephemeralRunnerConfigSecret:
+#     labels:
+#       key: value
+#     annotations:
+#       key: value
 
 ## dockerd configuration for dind mode
 ## These parameters optimize Docker daemon performance and resource usage
@@ -514,7 +562,7 @@ dockerd:
 ## Allows preloading Docker images from tar files stored on the host
 ## This is useful for speeding up runner startup by preloading commonly used images
 ## that don't need to be pulled from a registry every time a runner starts.
-## 
+##
 ## To prepare image tar files:
 ##   1. docker pull selenium/standalone-firefox:latest
 ##   2. docker save selenium/standalone-firefox:latest -o /opt/runner/images/selenium/standalone-firefox.tar
