@@ -39,5 +39,5 @@ roleRef:
   name: {{ include "gha-runner-scale-set.managerRoleName" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "gha-runner-scale-set.managerServiceAccountName" . | nindent 4 }}
-  namespace: {{ include "gha-runner-scale-set.managerServiceAccountNamespace" . | nindent 4 }}
+  name: {{ include "gha-runner-scale-set.managerServiceAccountName" . | trim }}
+  namespace: {{ include "gha-runner-scale-set.managerServiceAccountNamespace" . | trim }}

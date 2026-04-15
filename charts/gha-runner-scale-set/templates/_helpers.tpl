@@ -335,11 +335,7 @@ volumeMounts:
 {{- $tlsConfig := (default (dict) .Values.githubServerTLS) }}
 {{- range $i, $container := .Values.template.spec.containers }}
   {{- if eq $container.name "runner" }}
-    {{- range $key, $val := $container }}
-      {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
-{{ $key }}: {{ $val | toYaml | nindent 2 }}
-      {{- end }}
-    {{- end }}
+{{ omit $container "env" "volumeMounts" "name" | toYaml | trim }}
     {{- $setDockerHost := 1 }}
     {{- $setDockerOpts := 0 }}
     {{- if $.Values.dockerd.opts }}
@@ -435,11 +431,7 @@ volumeMounts:
 {{- $tlsConfig := (default (dict) .Values.githubServerTLS) }}
 {{- range $i, $container := .Values.template.spec.containers }}
   {{- if eq $container.name "runner" }}
-    {{- range $key, $val := $container }}
-      {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
-{{ $key }}: {{ $val | toYaml | nindent 2 }}
-      {{- end }}
-    {{- end }}
+{{ omit $container "env" "volumeMounts" "name" | toYaml | trim }}
     {{- $setContainerHooks := 1 }}
     {{- $setPodName := 1 }}
     {{- $setRequireJobContainer := 1 }}
@@ -526,15 +518,8 @@ volumeMounts:
 {{- $tlsConfig := (default (dict) .Values.githubServerTLS) }}
 {{- range $i, $container := .Values.template.spec.containers }}
   {{- if eq $container.name "runner" }}
-    {{- $setRunnerImage := "" }}
-    {{- range $key, $val := $container }}
-      {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
-      {{- if eq $key "image" }}
-        {{- $setRunnerImage = $val }}
-      {{- end }}
-{{ $key }}: {{ $val | toYaml | nindent 2 }}
-      {{- end }}
-    {{- end }}
+    {{- $setRunnerImage := default "" (index $container "image") }}
+{{ omit $container "env" "volumeMounts" "name" | toYaml | trim }}
     {{- $setContainerHooks := 1 }}
     {{- $setPodName := 1 }}
     {{- $setRequireJobContainer := 1 }}
@@ -624,11 +609,7 @@ volumeMounts:
 - {{ $container | toYaml | nindent 2 }}
 {{- else }}
 - name: {{ $container.name }}
-  {{- range $key, $val := $container }}
-    {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
-  {{ $key }}: {{ $val | toYaml | nindent 4 }}
-    {{- end }}
-  {{- end }}
+{{ omit $container "env" "volumeMounts" "name" | toYaml | trim | indent 2 }}
   {{- $setNodeExtraCaCerts := 0 }}
   {{- $setRunnerUpdateCaCerts := 0 }}
   {{- if $tlsConfig.runnerMountPath }}
