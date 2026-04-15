@@ -62,6 +62,12 @@ The following table lists the configurable parameters and their default values.
 |-----------|-------------|---------|
 | `rbac.create` | Create RBAC resources | `true` |
 
+### CRD Configuration
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `crd.install` | Install the Plans CRD | `true` |
+
 ### Service Account Configuration
 
 | Parameter | Description | Default |
