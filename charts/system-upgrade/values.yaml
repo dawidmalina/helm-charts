@@ -149,7 +149,7 @@ kubectl:
     # -- Kubectl image repository
     repository: rancher/kubectl
     # -- Kubectl image tag
-    tag: v1.35.2
+    tag: v1.35.4
 
 # Upgrade Plans configuration
 plans:
