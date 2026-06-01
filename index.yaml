@@ -89,6 +89,22 @@ entries:
     version: 0.0.6
   gha-runner-scale-set:
   - apiVersion: v2
+    appVersion: 0.14.2
+    created: "2026-06-01T08:21:49.888932478Z"
+    description: A Helm chart for deploying an AutoScalingRunnerSet
+    digest: 9e5cdd191b8c1154db8e875908900ecaa6159f360b22f038204c2364e916dc32
+    home: https://github.com/actions/actions-runner-controller
+    maintainers:
+    - name: actions
+      url: https://github.com/actions
+    name: gha-runner-scale-set
+    sources:
+    - https://github.com/actions/actions-runner-controller
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/gha-runner-scale-set-0.15.10/gha-runner-scale-set-0.15.10.tgz
+    version: 0.15.10
+  - apiVersion: v2
     appVersion: 0.14.1
     created: "2026-04-15T20:09:54.209102306Z"
     description: A Helm chart for deploying an AutoScalingRunnerSet
@@ -1386,6 +1402,31 @@ entries:
     version: 0.0.1
   system-upgrade:
   - apiVersion: v2
+    created: "2026-06-01T08:21:50.063228249Z"
+    description: A Helm chart for the system-upgrade-controller to manage K3s/RKE2
+      cluster upgrades
+    digest: 9bff1cf139b640420d83c535e2baf3eaa0151e6938fa3fa8cc92702f42c96c59
+    home: https://github.com/rancher/system-upgrade-controller
+    icon: https://rancher.com/assets/images/brand-logos/rancher-suse-logo-horizontal-white.svg
+    keywords:
+    - rancher
+    - k3s
+    - rke2
+    - upgrade
+    - controller
+    - system-upgrade
+    maintainers:
+    - name: Dawid Malina
+      url: https://github.com/dawidmalina/
+    name: system-upgrade
+    sources:
+    - https://github.com/rancher/system-upgrade-controller
+    - https://github.com/dawidmalina/helm-charts
+    type: application
+    urls:
+    - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.5.7/system-upgrade-0.5.7.tgz
+    version: 0.5.7
+  - apiVersion: v2
     created: "2026-04-15T20:21:16.200749953Z"
     description: A Helm chart for the system-upgrade-controller to manage K3s/RKE2
       cluster upgrades
@@ -1978,4 +2019,4 @@ entries:
     urls:
     - https://github.com/dawidmalina/helm-charts/releases/download/system-upgrade-0.1.0/system-upgrade-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-15T20:21:16.201107359Z"
+generated: "2026-06-01T08:21:50.065251461Z"
