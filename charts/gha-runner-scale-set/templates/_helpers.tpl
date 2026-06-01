@@ -110,6 +110,7 @@ volumeMounts:
 {{- end }}
 
 {{- define "gha-runner-scale-set.dind-container" -}}
+{{- $dockerd := default (dict) $.Values.dockerd }}
 {{- range $i, $val := .Values.template.spec.containers }}
   {{- if eq $val.name "dind" }}
 image: {{ $val.image }}
@@ -117,16 +118,16 @@ args:
   - dockerd
   - --host=unix:///var/run/docker.sock
   - --group=$(DOCKER_GROUP_GID)
-  - --mtu={{ $.Values.dockerd.mtu | default 1450 }}
-  - --max-concurrent-downloads={{ $.Values.dockerd.maxConcurrentDownloads | default 4 }}
-  - --max-concurrent-uploads={{ $.Values.dockerd.maxConcurrentUploads | default 2 }}
-  - --userland-proxy={{ $.Values.dockerd.userlandProxy | default false }}
-  - --exec-opt=native.cgroupdriver={{ $.Values.dockerd.cgroupDriver | default "cgroupfs" }}
-{{- if $.Values.dockerd.registryMirror }}
-  - --registry-mirror={{ $.Values.dockerd.registryMirror }}
+  - --mtu={{ $dockerd.mtu | default 1450 }}
+  - --max-concurrent-downloads={{ $dockerd.maxConcurrentDownloads | default 4 }}
+  - --max-concurrent-uploads={{ $dockerd.maxConcurrentUploads | default 2 }}
+  - --userland-proxy={{ $dockerd.userlandProxy | default false }}
+  - --exec-opt=native.cgroupdriver={{ $dockerd.cgroupDriver | default "cgroupfs" }}
+{{- if $dockerd.registryMirror }}
+  - --registry-mirror={{ $dockerd.registryMirror }}
 {{- end }}
-{{- if $.Values.dockerd.insecureRegistry }}
-  - --insecure-registry={{ $.Values.dockerd.insecureRegistry }}
+{{- if $dockerd.insecureRegistry }}
+  - --insecure-registry={{ $dockerd.insecureRegistry }}
 {{- end }}
 env:
   - name: DOCKER_GROUP_GID

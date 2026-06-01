@@ -1,5 +1,6 @@
 {{- $resourceMeta := default (dict) .Values.resourceMeta }}
 {{- $hasCustomResourceMeta := (and .Values.resourceMeta .Values.resourceMeta.autoscalingRunnerSet) }}
+{{- $preloadImages := default (dict) .Values.preloadImages }}
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
@@ -243,7 +244,7 @@ spec:
       - name: dind
           {{- include "gha-runner-scale-set.dind-container" . | nindent 8 }}
           {{- end }}
-          {{- if and .Values.preloadImages.enabled (gt (len .Values.preloadImages.imageTarFiles) 0) }}
+            {{- if and $preloadImages.enabled (gt (len $preloadImages.imageTarFiles) 0) }}
       - name: preload-docker-images
           {{- include "gha-runner-scale-set.preload-images-init-container" . | nindent 8 }}
           {{- end }}
@@ -281,7 +282,7 @@ spec:
         {{- if eq $containerMode.type "dind" }}
           {{- include "gha-runner-scale-set.dind-volume" . | nindent 6 }}
           {{- include "gha-runner-scale-set.dind-work-volume" . | nindent 6 }}
-          {{- if and .Values.preloadImages.enabled (gt (len .Values.preloadImages.imageTarFiles) 0) }}
+          {{- if and $preloadImages.enabled (gt (len $preloadImages.imageTarFiles) 0) }}
           {{- include "gha-runner-scale-set.preload-images-volume" . | nindent 6 }}
           {{- end }}
           {{- include "gha-runner-scale-set.non-work-volumes" . | nindent 6 }}
