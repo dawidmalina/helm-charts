@@ -232,6 +232,7 @@ volumeMounts:
 {{- end }}
 
 {{- define "gha-runner-scale-set.preload-images-volume" -}}
+{{- $preloadImages := default (dict) .Values.preloadImages }}
 {{- $createPreloadImagesVolume := 1 }}
   {{- range $i, $volume := .Values.template.spec.volumes }}
     {{- if eq $volume.name "runner-images" }}
@@ -242,12 +243,13 @@ volumeMounts:
   {{- if eq $createPreloadImagesVolume 1 }}
 - name: runner-images
   hostPath:
-    path: {{ .Values.preloadImages.hostPath }}
+    path: {{ required "preloadImages.hostPath must be set when preloadImages is enabled with imageTarFiles" $preloadImages.hostPath }}
     type: DirectoryOrCreate
   {{- end }}
 {{- end }}
 
 {{- define "gha-runner-scale-set.preload-images-init-container" -}}
+{{- $preloadImages := default (dict) .Values.preloadImages }}
 {{- range $i, $val := .Values.template.spec.containers }}
   {{- if eq $val.name "dind" }}
 image: {{ $val.image }}
@@ -269,7 +271,7 @@ args:
     done
     echo "Docker daemon is ready"
     echo "Starting Docker image preloading..."
-    {{- range $file := $.Values.preloadImages.imageTarFiles }}
+    {{- range $file := default (list) $preloadImages.imageTarFiles }}
     if [ -f "/runner-images/{{ $file }}" ]; then
       echo "Loading image from {{ $file }}..."
       docker load -i "/runner-images/{{ $file }}"

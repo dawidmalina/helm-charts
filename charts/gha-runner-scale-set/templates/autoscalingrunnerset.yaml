@@ -244,7 +244,7 @@ spec:
       - name: dind
           {{- include "gha-runner-scale-set.dind-container" . | nindent 8 }}
           {{- end }}
-            {{- if and $preloadImages.enabled (gt (len $preloadImages.imageTarFiles) 0) }}
+              {{- if and $preloadImages.enabled (gt (len $preloadImages.imageTarFiles) 0) (ne (default "" $preloadImages.hostPath) "") }}
       - name: preload-docker-images
           {{- include "gha-runner-scale-set.preload-images-init-container" . | nindent 8 }}
           {{- end }}
@@ -282,7 +282,7 @@ spec:
         {{- if eq $containerMode.type "dind" }}
           {{- include "gha-runner-scale-set.dind-volume" . | nindent 6 }}
           {{- include "gha-runner-scale-set.dind-work-volume" . | nindent 6 }}
-          {{- if and $preloadImages.enabled (gt (len $preloadImages.imageTarFiles) 0) }}
+          {{- if and $preloadImages.enabled (gt (len $preloadImages.imageTarFiles) 0) (ne (default "" $preloadImages.hostPath) "") }}
           {{- include "gha-runner-scale-set.preload-images-volume" . | nindent 6 }}
           {{- end }}
           {{- include "gha-runner-scale-set.non-work-volumes" . | nindent 6 }}
