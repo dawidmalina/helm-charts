@@ -335,12 +335,12 @@ volumeMounts:
 {{- $tlsConfig := (default (dict) .Values.githubServerTLS) }}
 {{- range $i, $container := .Values.template.spec.containers }}
   {{- if eq $container.name "runner" }}
-{{ omit $container "env" "volumeMounts" "name" | toYaml | trim }}
-    {{- $setDockerHost := 1 }}
-    {{- $setDockerOpts := 0 }}
-    {{- if $.Values.dockerd.opts }}
-      {{- $setDockerOpts = 1 }}
+    {{- range $key, $val := $container }}
+      {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
+{{ $key }}: {{ $val | toYaml | nindent 2 }}
+      {{- end }}
     {{- end }}
+    {{- $setDockerHost := 1 }}
     {{- $setRunnerWaitDocker := 1 }}
     {{- $setNodeExtraCaCerts := 0 }}
     {{- $setRunnerUpdateCaCerts := 0 }}
@@ -353,9 +353,6 @@ env:
       {{- range $i, $env := . }}
         {{- if eq $env.name "DOCKER_HOST" }}
           {{- $setDockerHost = 0 }}
-        {{- end }}
-        {{- if eq $env.name "DOCKER_OPTS" }}
-          {{- $setDockerOpts = 0 }}
         {{- end }}
         {{- if eq $env.name "RUNNER_WAIT_FOR_DOCKER_IN_SECONDS" }}
           {{- $setRunnerWaitDocker = 0 }}
@@ -372,10 +369,6 @@ env:
     {{- if $setDockerHost }}
   - name: DOCKER_HOST
     value: unix:///var/run/docker.sock
-    {{- end }}
-    {{- if $setDockerOpts }}
-  - name: DOCKER_OPTS
-    value: {{ $.Values.dockerd.opts | quote }}
     {{- end }}
     {{- if $setRunnerWaitDocker }}
   - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
@@ -431,7 +424,11 @@ volumeMounts:
 {{- $tlsConfig := (default (dict) .Values.githubServerTLS) }}
 {{- range $i, $container := .Values.template.spec.containers }}
   {{- if eq $container.name "runner" }}
-{{ omit $container "env" "volumeMounts" "name" | toYaml | trim }}
+    {{- range $key, $val := $container }}
+      {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
+{{ $key }}: {{ $val | toYaml | nindent 2 }}
+      {{- end }}
+    {{- end }}
     {{- $setContainerHooks := 1 }}
     {{- $setPodName := 1 }}
     {{- $setRequireJobContainer := 1 }}
@@ -518,8 +515,15 @@ volumeMounts:
 {{- $tlsConfig := (default (dict) .Values.githubServerTLS) }}
 {{- range $i, $container := .Values.template.spec.containers }}
   {{- if eq $container.name "runner" }}
-    {{- $setRunnerImage := default "" (index $container "image") }}
-{{ omit $container "env" "volumeMounts" "name" | toYaml | trim }}
+    {{- $setRunnerImage := "" }}
+    {{- range $key, $val := $container }}
+      {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
+      {{- if eq $key "image" }}
+        {{- $setRunnerImage = $val }}
+      {{- end }}
+{{ $key }}: {{ $val | toYaml | nindent 2 }}
+      {{- end }}
+    {{- end }}
     {{- $setContainerHooks := 1 }}
     {{- $setPodName := 1 }}
     {{- $setRequireJobContainer := 1 }}
@@ -584,6 +588,7 @@ env:
     {{- if $tlsConfig.runnerMountPath }}
       {{- $mountGitHubServerTLS = 1 }}
     {{- end }}
+    {{- if or $container.volumeMounts $mountGitHubServerTLS }}
 volumeMounts:
     {{- with $container.volumeMounts }}
       {{- range $i, $volMount := . }}
@@ -598,6 +603,9 @@ volumeMounts:
     mountPath: {{ clean (print $tlsConfig.runnerMountPath "/" $tlsConfig.certificateFrom.configMapKeyRef.key) }}
     subPath: {{ $tlsConfig.certificateFrom.configMapKeyRef.key }}
     {{- end }}
+    {{- else }}
+volumeMounts: []
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -609,7 +617,11 @@ volumeMounts:
 - {{ $container | toYaml | nindent 2 }}
 {{- else }}
 - name: {{ $container.name }}
-{{ omit $container "env" "volumeMounts" "name" | toYaml | trim | indent 2 }}
+  {{- range $key, $val := $container }}
+    {{- if and (ne $key "env") (ne $key "volumeMounts") (ne $key "name") }}
+  {{ $key }}: {{ $val | toYaml | nindent 4 }}
+    {{- end }}
+  {{- end }}
   {{- $setNodeExtraCaCerts := 0 }}
   {{- $setRunnerUpdateCaCerts := 0 }}
   {{- if $tlsConfig.runnerMountPath }}

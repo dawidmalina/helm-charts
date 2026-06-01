@@ -1,1 +1,4 @@
 .DS_Store
+charts/gha-runner-scale-set/sync.sh
+charts/gha-runner-scale-set/templates_bck/
+charts/gha-runner-scale-set/to-be-removed/
